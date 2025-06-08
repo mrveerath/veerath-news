@@ -1,4 +1,4 @@
-import User from "@/model"
+import {User} from "@/models/author.mode"
 import { dbConnect } from "@/lib/dbConnect";
 import { Webhook } from "svix";
 import { NextResponse } from "next/server";
