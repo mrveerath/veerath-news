@@ -1,7 +1,7 @@
 import mongoose, { Connection } from "mongoose";
 
 // Global variable to cache the connection
-let cachedConnection: {
+const cachedConnection: {
   conn: Connection | null;
   promise: Promise<typeof mongoose> | null;
 } = { conn: null, promise: null };
