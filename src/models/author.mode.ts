@@ -7,8 +7,6 @@ export interface IUser {
   fullName?: string;
   emailAddress: string;
   imageUrl?: string;
-  publicMetadata: Record<string, any>;
-  unsafeMetadata: Record<string, any>;
   lastSignInAt?: Date;
   deletedAt?: Date;
   createdAt: Date;
@@ -51,14 +49,6 @@ const userSchema = new Schema<IUser>(
       match: [/^https?:\/\/[^\s$.?#].[^\s]*$/, "Invalid URL format"],
       default: null,
     },
-    publicMetadata: {
-      type: Schema.Types.Mixed,
-      default: {},
-    },
-    unsafeMetadata: {
-      type: Schema.Types.Mixed,
-      default: {},
-    },
     lastSignInAt: {
       type: Date,
       default: null,
@@ -80,21 +70,6 @@ userSchema.index({ clerkId: 1 }, { unique: true });
 userSchema.index({ emailAddress: 1 });
 userSchema.index({ deletedAt: 1 });
 
-// Pre-save hook to normalize data
-userSchema.pre("save", function (next) {
-  // Ensure metadata fields are objects
-  if (!this.publicMetadata) this.publicMetadata = {};
-  if (!this.unsafeMetadata) this.unsafeMetadata = {};
-  next();
-});
 
-// Handle unique clerkId errors
-userSchema.post("save", function (error: any, doc: any, next: any) {
-  if (error.name === "MongoServerError" && error.code === 11000) {
-    next(new Error("Clerk user ID must be unique"));
-  } else {
-    next(error);
-  }
-});
 
 export const User = model<IUser>("User", userSchema);
