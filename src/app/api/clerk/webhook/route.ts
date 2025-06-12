@@ -2,7 +2,7 @@ import { WebhookEvent } from "@clerk/nextjs/server"
 import { Webhook } from "svix"
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
-import { User } from "@/models/author.mode"
+// import { User } from "@/models/author.mode"
 
 export async function POST(req: NextRequest) {
     // Get webhook secret from environment variables
