@@ -1,22 +1,26 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-const privateRoutes = ['/create-blog', '/profile']
+const privateRoutes = ['/create-blog', '/profile'];
+const isPrivateRoute = createRouteMatcher(privateRoutes);
 
-// Create a route matcher function
-const isPrivateRoute = createRouteMatcher(privateRoutes)
-
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   if (isPrivateRoute(req)) {
-    // Protect the private routes
-    auth().protect()
+    const session = await auth();
+    if (!session.userId) {
+      // Redirect unauthenticated users to the sign-in page
+      return new Response(null, {
+        status: 302,
+        headers: {
+          'Location': '/sign-in', // Adjust the sign-in route as needed
+        },
+      });
+    }
   }
-})
+});
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
-}
+};
