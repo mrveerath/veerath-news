@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   await dbConnect()
+  console.log(event)
 
   try {
     switch (event.type) {
