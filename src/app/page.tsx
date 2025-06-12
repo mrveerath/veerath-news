@@ -4,8 +4,6 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
-  const {user} = useUser()
-  console.log(user)
   return (
     <main className="min-h-screen"> {/* Account for sticky navbar height */}
       <section className={cn(
