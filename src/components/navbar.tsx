@@ -20,15 +20,13 @@ import {
     SheetContent,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import {
-    SignInButton,
-    SignedIn,
-    SignedOut,
-    UserButton,
-} from '@clerk/nextjs'
 import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
+import SignInBtn from "./SignIN"
+import SignOutBtn from "./SignOut"
 
 export function Navbar() {
+    const data = useSession()
     return (
         <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-950 px-20">
             <nav className="flex items-center justify-between w-full  py-3 ">
@@ -108,16 +106,13 @@ export function Navbar() {
                 <div className="flex items-center gap-2">
                     <div className="hidden lg:flex items-center gap-2">
                         <ModeToggle />
-                        <SignedOut>
-                            <SignInButton>
-                                <Button variant="outline" className="rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                                    Sign In
-                                </Button>
-                            </SignInButton>
-                        </SignedOut>
-                        <SignedIn>
-                            <UserButton afterSignOutUrl="/" />
-                        </SignedIn>
+                        {
+                            data.status === "authenticated" ? (
+                                <SignOutBtn />
+                            ) : (
+                                <SignInBtn />
+                            )
+                        }
                     </div>
 
                     {/* Mobile Navigation */}
@@ -163,18 +158,13 @@ export function Navbar() {
                                     </Link>
 
                                     <div className="p-3 border-b border-zinc-200 dark:border-zinc-900">
-                                        <SignedOut>
-                                            <SignInButton>
-                                                <Button variant="outline" className="w-full rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                                                    Sign In
-                                                </Button>
-                                            </SignInButton>
-                                        </SignedOut>
-                                        <SignedIn>
-                                            <div className="flex justify-center">
-                                                <UserButton afterSignOutUrl="/" />
-                                            </div>
-                                        </SignedIn>
+                                        {
+                                            data.status === "authenticated" ? (
+                                                <SignOutBtn />
+                                            ) : (
+                                                <SignInBtn />
+                                            )
+                                        }
                                     </div>
                                 </div>
                             </SheetContent>

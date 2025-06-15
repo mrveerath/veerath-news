@@ -1,39 +1,32 @@
-import { clerkMiddleware, ClerkMiddlewareAuth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from "next-auth/jwt"
 
-// Define private routes that require authentication
-const privateRoutes = ['/create-blog', '/profile'];
+export async function middleware(request: NextRequest) {
+    const secret = process.env.AUTH_SECRET
+  const token = await getToken({ req: request,secret })
+  const { pathname } = request.nextUrl
 
-// Define public routes that do not require authentication
-const publicRoutes = ['/api/clerk/webhook'];
-
-export default clerkMiddleware((auth:ClerkMiddlewareAuth, req) => {
-  const { pathname } = req.nextUrl;
-
-  // Check if the current route is a public route
-  if (publicRoutes.includes(pathname)) {
-    return NextResponse.next(); // Allow access without authentication
+  // Redirect authenticated users away from auth pages
+  if (token && (pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up"))) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Check if the current route is a private route
-  if (privateRoutes.includes(pathname)) {
-    const data = auth();
-
-    // If the user is not authenticated, redirect to the sign-in page
-    if (!data) {
-      const signInUrl = new URL('/sign-in', req.url);
-      return NextResponse.redirect(signInUrl);
-    }
+  // Protect routes that require authentication
+  if (!token && (pathname.startsWith("/profile") || pathname.startsWith("/create-blog"))) {
+    return NextResponse.redirect(new URL('/auth/sign-in', request.url))
   }
 
-  return NextResponse.next();
-});
+  // Continue with the request if no redirect is needed
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ],
-};
+    "/auth/sign-in",
+    "/auth/sign-up",
+    "/profile/:path*",
+    "/create-blog"
+  ]
+}

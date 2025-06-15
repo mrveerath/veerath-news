@@ -1,117 +1,91 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Types, models } from "mongoose";
+import bcrypt from "bcryptjs";
 
-// TypeScript interface for authentication providers
-interface IAuthProvider {
-  provider: string; // e.g., "email", "google", "twitter", "github"
-  providerId?: string; // Unique ID from the provider
-  email?: string; // Email associated with the provider
-  verified: boolean; // Verification status
-  lastUsedAt?: Date; // When the provider was last used for sign-in
-}
-
-// TypeScript interface for User
-export interface IUser extends Document {
-  clerkId: string;
-  username?: string;
-  fullName?: string;
-  emailAddresses: {
-    email: string;
-    verified: boolean;
-    primary: boolean;
-  }[];
-  profileImageUrl?: string;
-  authProviders: IAuthProvider[];
-  lastSignInAt?: Date;
-  deletedAt?: Date;
+// TypeScript interface for the User
+export interface I_User {
+  userName: string;
+  email: string;
+  password: string;
+  profileImage?: string;
+  fullName: string;
+  likedPosts: Types.ObjectId[];
+  commentedPost: Types.ObjectId[];
+  savedPost: Types.ObjectId[];
+  interests: string[];
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-const userSchema = new Schema<IUser>(
+// Define the schema
+const userSchema = new Schema<I_User>(
   {
-    clerkId: {
+    userName: {
       type: String,
-      required: [true, "Clerk user ID is required"],
+      required: [true, "Username is required"],
       unique: true,
       trim: true,
-      match: [/^user_[a-zA-Z0-9-_]+$/, "Invalid Clerk user ID format"],
-      index: true,
+      lowercase: true,
+      match: [/^[a-z0-9_]{3,20}$/, "Username must be 3–20 alphanumeric characters or underscores"],
     },
-    username: {
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [/^[^@]+@[^@]+\.[^@]+$/, "Email must be a valid email address"],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minlength: [8, "Password must be at least 8 characters"],
+    },
+    profileImage: {
       type: String,
       trim: true,
-      maxlength: [50, "Username cannot exceed 50 characters"],
-      match: [/^[a-zA-Z0-9_-]+$/, "Invalid username format"],
-      sparse: true,
+      match: [/^https?:\/\/[^\s$.?#].[^\s]*$/, "Profile image must be a valid URL"],
       default: null,
     },
     fullName: {
       type: String,
+      required: [true, "Full name is required"],
       trim: true,
-      maxlength: [100, "Full name cannot exceed 100 characters"],
-      default: null,
+      minlength: [2, "Full name must be at least 2 characters"],
+      maxlength: [50, "Full name must be 50 characters or less"],
     },
-    emailAddresses: [
+    likedPosts: [
       {
-        email: {
-          type: String,
-          required: [true, "Email address is required"],
-          trim: true,
-          lowercase: true,
-          match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
-        },
-        verified: {
-          type: Boolean,
-          default: false,
-        },
-        primary: {
-          type: Boolean,
-          default: false,
-        },
+        type: Schema.Types.ObjectId,
+        ref: "Blog",
+        default: [],
       },
     ],
-    profileImageUrl: {
-      type: String,
-      trim: true,
-      match: [/^https?:\/\/[^\s$.?#].[^\s]*$/, "Invalid URL format"],
-      default: null,
-    },
-    authProviders: [
+    commentedPost: [
       {
-        provider: {
-          type: String,
-          required: [true, "Auth provider type is required"],
-          enum: ["email", "google", "twitter", "github"],
-        },
-        providerId: {
-          type: String,
-          trim: true,
-          default: null,
-        },
-        email: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"],
-          default: null,
-        },
-        verified: {
-          type: Boolean,
-          default: false,
-        },
-        lastUsedAt: {
-          type: Date,
-          default: null,
-        },
+        type: Schema.Types.ObjectId,
+        ref: "Blog",
+        default: [],
       },
     ],
-    lastSignInAt: {
-      type: Date,
-      default: null,
+    savedPost: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Blog",
+        default: [],
+      },
+    ],
+    interests: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (interests: string[]) => interests.every((interest) => /^[a-zA-Z0-9-]{1,30}$/.test(interest)),
+        message: "Interests must be alphanumeric or hyphens, 1–30 characters each",
+      },
     },
-    deletedAt: {
-      type: Date,
-      default: null,
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -121,20 +95,20 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Indexes for performance
-userSchema.index({ clerkId: 1 }, { unique: true });
-userSchema.index({ "emailAddresses.email": 1 });
-userSchema.index({ deletedAt: 1 });
-userSchema.index({ "authProviders.provider": 1, "authProviders.providerId": 1 });
-
-// Prevent multiple primary email addresses
-userSchema.pre<IUser>("save", function (next) {
-  const primaryEmails = this.emailAddresses.filter((email) => email.primary);
-  if (primaryEmails.length > 1) {
-    throw new Error("Only one email address can be marked as primary");
+// Pre-save middleware to hash password if modified
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const saltRounds = 10;
+    this.password = await bcrypt.hash(this.password, saltRounds);
   }
   next();
 });
 
-// Export the User model
-export const User = model<IUser>("User", userSchema);
+// Instance method to validate password
+userSchema.methods.validatePassword = async function (candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+
+export const User = models.User || model<I_User>("User", userSchema);
+
