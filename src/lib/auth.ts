@@ -1,15 +1,15 @@
-import NextAuth, { type AuthError } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { User } from "@/models/user.model";
 import { dbConnect } from "@/lib/dbConnect";
 import { object, string } from "zod";
 import type { User as AuthUser } from "next-auth";
 
-// Custom error class for auth errors
-class AuthError extends Error implements AuthError {
+// Custom error class for auth errors with a different name
+class CustomAuthError extends Error {
     constructor(message: string, public type?: string) {
         super(message);
-        this.name = "AuthError";
+        this.name = "CustomAuthError";
     }
 }
 
@@ -55,13 +55,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }).select("+password"); // Include password for validation
 
                     if (!user) {
-                        throw new AuthError("Invalid credentials", "CredentialsSignin");
+                        throw new CustomAuthError("Invalid credentials", "CredentialsSignin");
                     }
 
                     // Validate password
                     const isValidPassword = await user.validatePassword(password);
                     if (!isValidPassword) {
-                        throw new AuthError("Invalid credentials", "CredentialsSignin");
+                        throw new CustomAuthError("Invalid credentials", "CredentialsSignin");
                     }
 
                     // Return sanitized user object
@@ -73,10 +73,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     } as AuthUser;
 
                 } catch (error) {
-                    if (error instanceof AuthError) {
+                    if (error instanceof CustomAuthError) {
                         throw error;
                     }
-                    throw new AuthError("Authentication failed", "CredentialsSignin");
+                    throw new CustomAuthError("Authentication failed", "CredentialsSignin");
                 }
             },
         }),
@@ -95,7 +95,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (user) {
                 token._id = user._id;
                 token.email = user.email;
-                token.fullName = user.fullName
+                token.fullName = user.fullName;
                 token.userName = user.userName;
             }
             return token;
@@ -104,8 +104,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (token && session.user) {
                 session.user._id = token._id as string;
                 session.user.userName = token.userName as string;
-                session.user.fullName = token.fullName as string
-                session.user.email = token.email as string
+                session.user.fullName = token.fullName as string;
+                session.user.email = token.email as string;
             }
             return session;
         },
