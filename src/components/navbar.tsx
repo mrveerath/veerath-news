@@ -20,6 +20,7 @@ import {
     SheetContent,
     SheetTrigger,
 } from "@/components/ui/sheet"
+<<<<<<< HEAD
 import {
     SignInButton,
     SignedIn,
@@ -29,6 +30,16 @@ import {
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
+=======
+import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
+import SignInBtn from "./SignIN"
+import SignOutBtn from "./SignOut"
+import Profile from "./Profile"
+
+export function Navbar() {
+    const data = useSession()
+>>>>>>> master
     return (
         <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-950 px-20">
             <nav className="flex items-center justify-between w-full  py-3 ">
@@ -108,6 +119,7 @@ export function Navbar() {
                 <div className="flex items-center gap-2">
                     <div className="hidden lg:flex items-center gap-2">
                         <ModeToggle />
+<<<<<<< HEAD
                         <SignedOut>
                             <SignInButton>
                                 <Button variant="outline" className="rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
@@ -118,6 +130,18 @@ export function Navbar() {
                         <SignedIn>
                             <UserButton afterSignOutUrl="/" />
                         </SignedIn>
+=======
+                        {
+                            data.status === "authenticated" ? (
+                                <>
+                                    <Profile />
+                                    <SignOutBtn />
+                                </>
+                            ) : (
+                                <SignInBtn />
+                            )
+                        }
+>>>>>>> master
                     </div>
 
                     {/* Mobile Navigation */}
@@ -163,6 +187,7 @@ export function Navbar() {
                                     </Link>
 
                                     <div className="p-3 border-b border-zinc-200 dark:border-zinc-900">
+<<<<<<< HEAD
                                         <SignedOut>
                                             <SignInButton>
                                                 <Button variant="outline" className="w-full rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
@@ -175,6 +200,18 @@ export function Navbar() {
                                                 <UserButton afterSignOutUrl="/" />
                                             </div>
                                         </SignedIn>
+=======
+                                        {
+                                            data.status === "authenticated" ? (
+                                                <>
+                                                    <Profile />
+                                                    <SignOutBtn />
+                                                </>
+                                            ) : (
+                                                <SignInBtn />
+                                            )
+                                        }
+>>>>>>> master
                                     </div>
                                 </div>
                             </SheetContent>

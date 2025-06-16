@@ -4,7 +4,11 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from 'next/font/local';
+<<<<<<< HEAD
 import { ClerkProvider } from '@clerk/nextjs'
+=======
+import AuthenticationProvider from "@/Context/Authentication";
+>>>>>>> master
 
 const Chillax = localFont({
   src: [
@@ -32,6 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+<<<<<<< HEAD
     <ClerkProvider
       appearance={{
         variables: {
@@ -144,6 +149,14 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${Chillax.variable}`}
       >
+=======
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${Chillax.variable}`}
+    >
+      <AuthenticationProvider>
+>>>>>>> master
         <body className="antialiased scroll-smooth bg-zinc-50 dark:bg-zinc-950">
           <ThemeProvider
             attribute="class"
@@ -156,7 +169,12 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </body>
+<<<<<<< HEAD
       </html>
     </ClerkProvider>
+=======
+      </AuthenticationProvider>
+    </html>
+>>>>>>> master
   );
 }

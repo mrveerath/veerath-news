@@ -1,7 +1,10 @@
 "use client"
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+<<<<<<< HEAD
 import { useUser } from "@clerk/nextjs";
+=======
+>>>>>>> master
 
 export default function Home() {
   const {user} = useUser()
@@ -14,7 +17,11 @@ export default function Home() {
         "p-4 sm:p-8",
         "border-t border-zinc-200 dark:border-zinc-800",
         "bg-white dark:bg-zinc-950",
+<<<<<<< HEAD
         "lg:px-40" // Match navbar horizontal padding
+=======
+        "lg:px-32" // Match navbar horizontal padding
+>>>>>>> master
       )}>
         <div className="w-full flex flex-col items-center justify-center gap-6 text-center">
           <h1 className={cn(
