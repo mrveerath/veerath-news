@@ -1,18 +1,8 @@
 "use client"
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { useUser } from "@clerk/nextjs";
-=======
->>>>>>> master
-=======
-import { useUser } from "@clerk/nextjs";
->>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 
 export default function Home() {
-  const {user} = useUser()
-  console.log(user)
   return (
     <main className="min-h-screen"> {/* Account for sticky navbar height */}
       <section className={cn(
@@ -21,15 +11,7 @@ export default function Home() {
         "p-4 sm:p-8",
         "border-t border-zinc-200 dark:border-zinc-800",
         "bg-white dark:bg-zinc-950",
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "lg:px-40" // Match navbar horizontal padding
-=======
         "lg:px-32" // Match navbar horizontal padding
->>>>>>> master
-=======
-        "lg:px-40" // Match navbar horizontal padding
->>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
       )}>
         <div className="w-full flex flex-col items-center justify-center gap-6 text-center">
           <h1 className={cn(
