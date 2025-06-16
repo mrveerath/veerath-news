@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from 'next/font/local';
-import { ClerkProvider } from '@clerk/nextjs'
+import AuthenticationProvider from "@/Context/Authentication";
+
 
 const Chillax = localFont({
   src: [
@@ -32,113 +33,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          fontFamily: 'var(--font-chillax), sans-serif',
-          colorPrimary: '#dc2626', // Red-600
-          colorText: '#18181b', // Zinc-900 (light)
-          colorBackground: '#ffffff',
-          borderRadius: '0',
-        },
-        elements: {
-          // Card container
-          card: {
-            backgroundColor: '#ffffff',
-            boxShadow: 'none',
-            border: '1px solid #e5e7eb',
-            borderRadius: '0',
-          },
-
-          // All buttons
-          button: {
-            borderRadius: '0',
-          },
-
-          // Primary action button
-          formButtonPrimary: {
-            backgroundColor: '#dc2626',
-            color: '#ffffff',
-            border: '1px solid #dc2626',
-            borderRadius: '0',
-            '&:hover': {
-              backgroundColor: '#b91c1c',
-              borderColor: '#b91c1c',
-            },
-            '&:focus': {
-              boxShadow: 'none',
-            },
-          },
-
-          // Input fields
-          formFieldInput: {
-            backgroundColor: '#ffffff',
-            border: '1px solid #d1d5db',
-            borderRadius: '0',
-            '&:focus': {
-              borderColor: '#dc2626',
-              boxShadow: '0 0 0 1px #dc2626',
-            },
-          },
-
-          // Social buttons
-          socialButtonsBlockButton: {
-            backgroundColor: '#ffffff',
-            color: '#18181b',
-            border: '1px solid #d1d5db',
-            borderRadius: '0',
-            '&:hover': {
-              backgroundColor: '#f4f4f5',
-            },
-          },
-
-          // Header
-          headerTitle: {
-            color: '#18181b',
-            fontSize: '1.5rem',
-            fontWeight: '700',
-          },
-          headerSubtitle: {
-            color: '#71717a',
-            fontSize: '0.875rem',
-          },
-
-          // Footer
-          footer: {
-            borderTop: '1px solid #e5e7eb',
-            paddingTop: '1rem',
-          },
-
-          // Links
-          footerActionLink: {
-            color: '#dc2626',
-            '&:hover': {
-              color: '#b91c1c',
-            },
-          },
-
-          // Alternative methods
-          alternativeMethodsBlockButton: {
-            borderRadius: '0',
-            '&:hover': {
-              backgroundColor: '#f4f4f5',
-            },
-          },
-
-          // Divider
-          dividerLine: {
-            backgroundColor: '#e5e7eb',
-          },
-          dividerText: {
-            color: '#71717a',
-          }
-        },
-        layout: {
-          socialButtonsPlacement: 'bottom',
-          socialButtonsVariant: 'blockButton',
-        }
-      }}
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${Chillax.variable}`}
     >
+      <AuthenticationProvider>
       <html
         lang="en"
         suppressHydrationWarning
@@ -156,7 +56,7 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </body>
-      </html>
-    </ClerkProvider>
+      </AuthenticationProvider>
+    </html>
   );
 }
