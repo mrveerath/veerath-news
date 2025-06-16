@@ -70,6 +70,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         email: user.email,
                         name: user.fullName,
                         userName: user.userName,
+                        image:user.profileImage
+
                     } as AuthUser;
 
                 } catch (error) {
@@ -93,7 +95,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token._id = user._id;
+                token.id = user.id;
                 token.email = user.email;
                 token.fullName = user.fullName;
                 token.userName = user.userName;
@@ -102,10 +104,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         async session({ session, token }) {
             if (token && session.user) {
-                session.user._id = token._id as string;
+                session.user.id = token.id as string;
                 session.user.userName = token.userName as string;
                 session.user.fullName = token.fullName as string;
                 session.user.email = token.email as string;
+                session.user.profileImage = token.profileImage as string
             }
             return session;
         },

@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
 import SignInBtn from "./SignIN"
 import SignOutBtn from "./SignOut"
+import Profile from "./Profile"
 
 export function Navbar() {
     const data = useSession()
@@ -108,7 +109,10 @@ export function Navbar() {
                         <ModeToggle />
                         {
                             data.status === "authenticated" ? (
-                                <SignOutBtn />
+                                <>
+                                    <Profile />
+                                    <SignOutBtn />
+                                </>
                             ) : (
                                 <SignInBtn />
                             )
@@ -160,7 +164,10 @@ export function Navbar() {
                                     <div className="p-3 border-b border-zinc-200 dark:border-zinc-900">
                                         {
                                             data.status === "authenticated" ? (
-                                                <SignOutBtn />
+                                                <>
+                                                    <Profile />
+                                                    <SignOutBtn />
+                                                </>
                                             ) : (
                                                 <SignInBtn />
                                             )
