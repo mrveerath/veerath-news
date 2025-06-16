@@ -10,9 +10,13 @@
   },
   "dependencies": {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@clerk/nextjs": "^6.21.0",
 =======
 >>>>>>> master
+=======
+    "@clerk/nextjs": "^6.21.0",
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     "@lexical/history": "^0.32.1",
     "@lexical/list": "^0.32.1",
     "@lexical/react": "^0.32.1",
@@ -22,9 +26,12 @@
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     "@radix-ui/react-label": "^2.1.7",
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     "@radix-ui/react-navigation-menu": "^1.2.13",
     "@radix-ui/react-slot": "^1.2.3",
     "@tinymce/tinymce-react": "^6.2.1",
@@ -32,9 +39,12 @@
     "@tiptap/starter-kit": "^2.13.0",
     "@types/mongoose": "^5.11.96",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     "bcryptjs": "^3.0.2",
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.6",
@@ -45,12 +55,16 @@
     "mongoose": "^8.15.1",
     "next": "15.3.3",
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     "next-themes": "^0.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^2.0.5",
     "svix": "^1.67.0",
     "tailwind-merge": "^3.3.0"
+<<<<<<< HEAD
 =======
     "next-auth": "^5.0.0-beta.28",
     "next-themes": "^0.4.6",
@@ -61,6 +75,8 @@
     "tailwind-merge": "^3.3.0",
     "zod": "^3.25.64"
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 import { clerkMiddleware } from '@clerk/nextjs/server'
 
 export default clerkMiddleware()
@@ -10,6 +13,7 @@ export const config = {
         // Always run for API routes
         '/(api|trpc)(.*)',
     ],
+<<<<<<< HEAD
 =======
 // middleware.ts
 import { NextResponse } from 'next/server'
@@ -43,4 +47,6 @@ export const config = {
     "/create-blog"
   ]
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 }

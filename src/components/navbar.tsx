@@ -21,6 +21,9 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 import {
     SignInButton,
     SignedIn,
@@ -30,6 +33,7 @@ import {
 import { cn } from "@/lib/utils"
 
 export function Navbar() {
+<<<<<<< HEAD
 =======
 import { cn } from "@/lib/utils"
 import { useSession } from "next-auth/react"
@@ -40,6 +44,8 @@ import Profile from "./Profile"
 export function Navbar() {
     const data = useSession()
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     return (
         <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-950 px-20">
             <nav className="flex items-center justify-between w-full  py-3 ">
@@ -120,6 +126,9 @@ export function Navbar() {
                     <div className="hidden lg:flex items-center gap-2">
                         <ModeToggle />
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
                         <SignedOut>
                             <SignInButton>
                                 <Button variant="outline" className="rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
@@ -130,6 +139,7 @@ export function Navbar() {
                         <SignedIn>
                             <UserButton afterSignOutUrl="/" />
                         </SignedIn>
+<<<<<<< HEAD
 =======
                         {
                             data.status === "authenticated" ? (
@@ -142,6 +152,8 @@ export function Navbar() {
                             )
                         }
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
                     </div>
 
                     {/* Mobile Navigation */}
@@ -188,6 +200,9 @@ export function Navbar() {
 
                                     <div className="p-3 border-b border-zinc-200 dark:border-zinc-900">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
                                         <SignedOut>
                                             <SignInButton>
                                                 <Button variant="outline" className="w-full rounded-none border-zinc-300 dark:border-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-900">
@@ -200,6 +215,7 @@ export function Navbar() {
                                                 <UserButton afterSignOutUrl="/" />
                                             </div>
                                         </SignedIn>
+<<<<<<< HEAD
 =======
                                         {
                                             data.status === "authenticated" ? (
@@ -212,6 +228,8 @@ export function Navbar() {
                                             )
                                         }
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
                                     </div>
                                 </div>
                             </SheetContent>

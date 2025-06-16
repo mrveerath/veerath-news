@@ -5,10 +5,14 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import localFont from 'next/font/local';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ClerkProvider } from '@clerk/nextjs'
 =======
 import AuthenticationProvider from "@/Context/Authentication";
 >>>>>>> master
+=======
+import { ClerkProvider } from '@clerk/nextjs'
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 
 const Chillax = localFont({
   src: [
@@ -37,6 +41,9 @@ export default function RootLayout({
 }>) {
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
     <ClerkProvider
       appearance={{
         variables: {
@@ -149,6 +156,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${Chillax.variable}`}
       >
+<<<<<<< HEAD
 =======
     <html
       lang="en"
@@ -157,6 +165,8 @@ export default function RootLayout({
     >
       <AuthenticationProvider>
 >>>>>>> master
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
         <body className="antialiased scroll-smooth bg-zinc-50 dark:bg-zinc-950">
           <ThemeProvider
             attribute="class"
@@ -170,11 +180,16 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
 <<<<<<< HEAD
+<<<<<<< HEAD
       </html>
     </ClerkProvider>
 =======
       </AuthenticationProvider>
     </html>
 >>>>>>> master
+=======
+      </html>
+    </ClerkProvider>
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
   );
 }

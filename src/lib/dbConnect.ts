@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
 import mongoose, { Connection } from "mongoose";
 
 // Global variable to cache the connection
@@ -59,6 +62,7 @@ process.on("SIGINT", async () => {
     console.log("MongoDB connection closed through app termination");
     process.exit(0);
   }
+<<<<<<< HEAD
 });
 =======
 import mongoose from 'mongoose';
@@ -95,3 +99,6 @@ export async function dbConnect() {
   return cachedConnection;
 }
 >>>>>>> master
+=======
+});
+>>>>>>> b48fbca26c30a6a27d53857c64c0245076d32823
