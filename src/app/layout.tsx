@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navbar";
 import localFont from 'next/font/local';
 import AuthenticationProvider from "@/Context/Authentication";
 
+
 const Chillax = localFont({
   src: [
     {
@@ -38,6 +39,11 @@ export default function RootLayout({
       className={`${Chillax.variable}`}
     >
       <AuthenticationProvider>
+      <html
+        lang="en"
+        suppressHydrationWarning
+        className={`${Chillax.variable}`}
+      >
         <body className="antialiased scroll-smooth bg-zinc-50 dark:bg-zinc-950">
           <ThemeProvider
             attribute="class"

@@ -278,7 +278,7 @@ export default function Page(): React.ReactElement {
                 </div>
                 <div className="editor-container">
                   <Editor
-                    apiKey="0bdb99ip4v6gbut5addtvquehv0bfgyglx2qd1kwdfpg4iy1"
+                    apiKey={process.env.TINY_MCE_EDITOR_API_KEY}
                     onInit={(evt, editor) => {
                       editorRef.current = editor;
                       updateCharacterCount();

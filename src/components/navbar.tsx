@@ -25,7 +25,6 @@ import { useSession } from "next-auth/react"
 import SignInBtn from "./SignIN"
 import SignOutBtn from "./SignOut"
 import Profile from "./Profile"
-
 export function Navbar() {
     const data = useSession()
     return (
