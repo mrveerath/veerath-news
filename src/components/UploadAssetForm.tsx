@@ -1,4 +1,5 @@
 import { ImagePlus } from "lucide-react";
+import Image from "next/image";
 import React, { useRef } from "react";
 
 export default function Imagepkr({
@@ -80,7 +81,7 @@ export default function Imagepkr({
                     >
                         X
                     </button>
-                    <img
+                    <Image
                         className="h-40 w-28 rounded-md object-cover"
                         src={URL.createObjectURL(image)}
                         alt={image.name}

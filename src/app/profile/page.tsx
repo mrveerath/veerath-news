@@ -11,7 +11,9 @@ export default function page(): React.ReactElement {
     const { data } = useSession()
     const [showImageUploadForm, setShowImageUploadForm] = useState<boolean>(false)
     const [imagesToUpload, setImagesToUPload] = useState<File[]>([])
-    const handleUploadAssets = useCallback(() => {},[])
+    const handleUploadAssets = useCallback(() => {
+        
+    },[imagesToUpload])
     return (
         <div className={cn(
             "grid grid-cols-4 min-h-screen gap-10 p-18 w-full bg-zinc-200 dark:bg-zinc-800"
