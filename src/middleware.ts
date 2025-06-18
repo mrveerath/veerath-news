@@ -6,6 +6,7 @@ export async function middleware(request: NextRequest) {
     const secret = process.env.AUTH_SECRET
   const token = await getToken({ req: request,secret })
   const { pathname } = request.nextUrl
+  console.log(request)
 
   console.log("The Tokens Are :",token)
   console.log(pathname)
