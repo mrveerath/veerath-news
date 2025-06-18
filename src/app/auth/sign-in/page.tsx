@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff,} from 'lucide-react';
+import { Eye, EyeOff, } from 'lucide-react';
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Page():React.ReactElement {
+export default function Page(): React.ReactElement {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
@@ -29,7 +29,7 @@ export default function Page():React.ReactElement {
             password: formData.get("password"),
             redirect: false,
         });
-toast.dismiss()
+        toast.dismiss()
         if (result?.error) {
             toast.error(result.error);
         } else {
@@ -40,7 +40,7 @@ toast.dismiss()
 
     return (
         <div className={cn(
-            "flex items-center justify-center min-h-screen p-4 sm:p-8 w-full bg-zinc-200 dark:bg-zinc-800"
+            "flex items-center justify-center min-h-screen p-4 sm:p-8 w-full bg-zinc-200 dark:bg-zinc-950"
         )}>
             <form
                 className={cn(
