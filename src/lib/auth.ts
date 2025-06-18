@@ -91,7 +91,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signIn: "/auth/sign-in",
         error: "/auth/sign-in",
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
