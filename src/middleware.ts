@@ -6,8 +6,6 @@ import { getSession } from 'next-auth/react'
 export async function middleware(request: NextRequest) {
     const secret = process.env.AUTH_SECRET
   const token = await getToken({ req: request,secret })
-  const session = await getSession()
-  console.log(session)
   const { pathname } = request.nextUrl
 
   console.log(token)
