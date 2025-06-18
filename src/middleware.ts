@@ -1,35 +1,40 @@
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
-import { getToken } from "next-auth/jwt"
+import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-    const secret = process.env.AUTH_SECRET
-  const token = await getToken({ req: request,secret })
-  const { pathname } = request.nextUrl
-  console.log(request)
+    const secret = process.env.AUTH_SECRET;
+    if (!secret) {
+        console.error('Error: AUTH_SECRET is not set');
+        return NextResponse.next(); // Fallback to avoid breaking
+    }
 
-  console.log("The Tokens Are :",token)
-  console.log(pathname)
+    const token = await getToken({ req: request, secret });
+    const { pathname } = request.nextUrl;
 
-  // Redirect authenticated users away from auth pages
-  if (token && (pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up"))) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+    console.log('AUTH_SECRET:', process.env.AUTH_SECRET);
+    console.log('Cookies:', request.cookies.get('next-auth.session-token'));
+    console.log('Token:', token);
+    console.log('Pathname:', pathname);
 
-  // Protect routes that require authentication
-  if (!token && (pathname.startsWith("/profile") || pathname.startsWith("/create-blog"))) {
-    return NextResponse.redirect(new URL('/auth/sign-in', request.url))
-  }
+    // Redirect authenticated users away from auth pages
+    if (token && (pathname.startsWith('/auth/sign-in') || pathname.startsWith('/auth/sign-up'))) {
+        return NextResponse.redirect(new URL('/', request.url));
+    }
 
-  // Continue with the request if no redirect is needed
-  return NextResponse.next()
+    // Protect routes that require authentication
+    if (!token && (pathname.startsWith('/profile') || pathname.startsWith('/create-blog'))) {
+        return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+    }
+
+    return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/auth/sign-in",
-    "/auth/sign-up",
-    "/profile/:path*",
-    "/create-blog"
-  ]
-}
+    matcher: [
+        '/auth/sign-in',
+        '/auth/sign-up',
+        '/profile/:path*',
+        '/create-blog',
+    ],
+};
