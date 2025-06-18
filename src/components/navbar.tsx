@@ -80,7 +80,7 @@ export function Navbar() {
 
                             <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "rounded-none")}>
-                                    <Link href="/blogs" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                                    <Link href="/create-blog" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
                                         Blogs
                                     </Link>
                                 </NavigationMenuLink>
@@ -151,7 +151,7 @@ export function Navbar() {
                                         </div>
                                     </div>
 
-                                    <Link href="/blogs" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
+                                    <Link href="/create-blog" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
                                         Blogs
                                     </Link>
 
