@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { getToken } from "next-auth/jwt"
-import { getSession } from 'next-auth/react'
 
 export async function middleware(request: NextRequest) {
     const secret = process.env.AUTH_SECRET
