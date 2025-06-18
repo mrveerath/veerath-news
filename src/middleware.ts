@@ -7,6 +7,9 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request,secret })
   const { pathname } = request.nextUrl
 
+  console.log(token)
+  console.log(pathname)
+
   // Redirect authenticated users away from auth pages
   if (token && (pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up"))) {
     return NextResponse.redirect(new URL('/', request.url))
