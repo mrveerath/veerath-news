@@ -85,6 +85,8 @@ export default function Imagepkr({
                         className="h-40 w-28 rounded-md object-cover"
                         src={URL.createObjectURL(image)}
                         alt={image.name}
+                        height={200}
+                        width={200}
                     />
                 </span>
             ))}

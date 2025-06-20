@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-  const { nextUrl, cookies } = request;
+  const { nextUrl } = request;
   const pathname = nextUrl.pathname;
   const url = request.nextUrl.clone();
 
@@ -18,10 +18,6 @@ export async function middleware(request: NextRequest) {
   // Try getting the token
   const token = await getToken({ req: request, secret });
 
-  // Debugging cookies and token
-  console.log('[Middleware] Cookies:', cookies.getAll());
-  console.log('[Middleware] Decoded token:', token);
-  console.log('[Middleware] Pathname:', pathname);
 
   // Redirect authenticated users away from auth pages
   const isAuthPage = pathname.startsWith('/auth/sign-in') || pathname.startsWith('/auth/sign-up');

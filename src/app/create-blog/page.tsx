@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import DOMPurify from 'dompurify';
+import { useState, useCallback } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import RichTextEditor from './Editor/Editor'; // Make sure the path is correct
+import { simulateServerSideAction } from '../actions/createBlog';
 
-interface BlogData {
+export interface BlogData {
   title: string;
   slug: string;
   excerpt: string;
@@ -19,10 +18,11 @@ interface BlogData {
   tags: string[];
   isPublished: boolean;
   publishedAt: string;
+  userId:string | undefined
 }
 
 export default function Page(): React.ReactElement {
-  const router = useRouter();
+  const { data } = useSession();
   const [blogData, setBlogData] = useState<BlogData>({
     title: '',
     slug: '',
@@ -34,8 +34,10 @@ export default function Page(): React.ReactElement {
     tags: [],
     isPublished: false,
     publishedAt: new Date().toISOString().split('T')[0],
+    userId:data?.user.id
   });
-  const { data } = useSession();
+
+  
   const [characterCount, setCharacterCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -97,7 +99,17 @@ export default function Page(): React.ReactElement {
     return Object.keys(newErrors).length === 0;
   }, [blogData]);
 
-  const saveToDatabase = useCallback(() => {}, []);
+
+
+  const saveToDatabase = useCallback(async(e: React.FormEvent) => {
+    e.preventDefault();
+    if (validate()) {
+      setIsSubmitting(true);
+      const isCreated = await simulateServerSideAction(blogData);
+      console.log(isCreated)
+      setIsSubmitting(false);
+    }
+  }, [blogData, validate]);
 
   return (
     <>
@@ -125,9 +137,8 @@ export default function Page(): React.ReactElement {
                   name="title"
                   value={blogData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.title ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.title ? 'border-red-500' : ''
+                    }`}
                   placeholder="Enter blog title"
                   required
                   aria-describedby={errors.title ? 'title-error' : undefined}
@@ -144,9 +155,8 @@ export default function Page(): React.ReactElement {
                   name="excerpt"
                   value={blogData.excerpt}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.excerpt ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.excerpt ? 'border-red-500' : ''
+                    }`}
                   placeholder="Short description of your blog (max 160 characters)"
                   rows={3}
                   maxLength={160}
@@ -217,6 +227,7 @@ export default function Page(): React.ReactElement {
               </div>
 
               <button
+                type="submit"
                 disabled={isSubmitting}
                 className={`w-full py-2 px-4 focus:ring-2 outline-none focus:ring-red-500 focus:ring-offset-2 transition-colors bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed`}
                 aria-label="Save blog post"
@@ -263,9 +274,8 @@ export default function Page(): React.ReactElement {
                   name="thumbnailUrl"
                   value={blogData.thumbnailUrl}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.thumbnailUrl ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.thumbnailUrl ? 'border-red-500' : ''
+                    }`}
                   placeholder="https://example.com/image.jpg"
                   required
                   aria-describedby={errors.thumbnailUrl ? 'thumbnail-error' : undefined}
@@ -308,9 +318,8 @@ export default function Page(): React.ReactElement {
                   name="slug"
                   value={blogData.slug}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.slug ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.slug ? 'border-red-500' : ''
+                    }`}
                   placeholder="blog-post-title"
                   required
                   aria-describedby={errors.slug ? 'slug-error' : undefined}
@@ -332,9 +341,8 @@ export default function Page(): React.ReactElement {
                   name="metaTitle"
                   value={blogData.metaTitle}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.metaTitle ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.metaTitle ? 'border-red-500' : ''
+                    }`}
                   placeholder="SEO title for search engines (max 60 characters)"
                   maxLength={60}
                   required
@@ -359,9 +367,8 @@ export default function Page(): React.ReactElement {
                   name="metaDescription"
                   value={blogData.metaDescription}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${
-                    errors.metaDescription ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 border focus:ring-2 outline-none focus:ring-red-500 focus:border-transparent bg-zinc-200 dark:bg-zinc-800 border-zinc-300 text-red-600 ${errors.metaDescription ? 'border-red-500' : ''
+                    }`}
                   placeholder="SEO description for search engines (max 160 characters)"
                   rows={3}
                   maxLength={160}

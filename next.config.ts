@@ -6,5 +6,14 @@ const nextConfig = {
       'lexical': './node_modules/lexical',
     },
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb' // Increase limit as needed (e.g., 10mb, 20mb)
+    },
+     serverComponentsExternalPackages: ["mongoose"],
+  },
+  images: {
+    domains: ['ik.imagekit.io'], // Add your external image domain here
+  },
 };
 module.exports = nextConfig;

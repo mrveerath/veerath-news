@@ -57,6 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     if (!user) {
                         throw new CustomAuthError("Invalid credentials", "CredentialsSignin");
                     }
+                    if(user.isDeleted){
+                        throw new CustomAuthError("User Is Deleted", "CredentialsSignin");
+                    }
 
                     // Validate password
                     const isValidPassword = await user.validatePassword(password);

@@ -1,3 +1,4 @@
+import React, { useState, useCallback, useEffect } from 'react';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -14,24 +15,63 @@ import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight } from 'lowlight';
-import css from 'highlight.js/lib/languages/css';
-import js from 'highlight.js/lib/languages/javascript';
-import ts from 'highlight.js/lib/languages/typescript';
-import html from 'highlight.js/lib/languages/xml';
-import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FaBold, FaItalic, FaUnderline, FaStrikethrough, FaHeading, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify, FaCode, FaQuoteLeft, FaMinus, FaTable, FaLink, FaImage, FaUndo, FaRedo } from 'react-icons/fa';
-import { MdFormatColorText, MdHighlight } from 'react-icons/md';
+import { FaBold, FaItalic, FaUnderline, FaStrikethrough, FaListUl, FaListOl, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify, FaCode, FaQuoteLeft, FaMinus, FaTable, FaLink, FaImage, FaUndo, FaRedo } from 'react-icons/fa';
+import { MdHighlight } from 'react-icons/md';
 
+// Import languages for syntax highlighting
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import java from 'highlight.js/lib/languages/java';
+import cpp from 'highlight.js/lib/languages/cpp';
+import c from 'highlight.js/lib/languages/c';
+import csharp from 'highlight.js/lib/languages/csharp';
+import go from 'highlight.js/lib/languages/go';
+import rust from 'highlight.js/lib/languages/rust';
+import swift from 'highlight.js/lib/languages/swift';
+import kotlin from 'highlight.js/lib/languages/kotlin';
+import ruby from 'highlight.js/lib/languages/ruby';
+import php from 'highlight.js/lib/languages/php';
+import scala from 'highlight.js/lib/languages/scala';
+import sql from 'highlight.js/lib/languages/sql';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import html from 'highlight.js/lib/languages/xml';
+import json from 'highlight.js/lib/languages/json';
+import markdown from 'highlight.js/lib/languages/markdown';
+import yaml from 'highlight.js/lib/languages/yaml';
+import xml from 'highlight.js/lib/languages/xml';
+
+// Create a lowlight instance and register languages
 const lowlight = createLowlight();
-lowlight.register('html', html);
+
+lowlight.register('javascript', javascript);
+lowlight.register('typescript', typescript);
+lowlight.register('python', python);
+lowlight.register('java', java);
+lowlight.register('cpp', cpp);
+lowlight.register('c', c);
+lowlight.register('csharp', csharp);
+lowlight.register('go', go);
+lowlight.register('rust', rust);
+lowlight.register('swift', swift);
+lowlight.register('kotlin', kotlin);
+lowlight.register('ruby', ruby);
+lowlight.register('php', php);
+lowlight.register('scala', scala);
+lowlight.register('sql', sql);
+lowlight.register('bash', bash);
 lowlight.register('css', css);
-lowlight.register('js', js);
-lowlight.register('ts', ts);
+lowlight.register('html', html);
+lowlight.register('json', json);
+lowlight.register('markdown', markdown);
+lowlight.register('yaml', yaml);
+lowlight.register('xml', xml);
 
 const RichTextEditor = ({ value, onChange }:{
-    value:string,
-    onChange:(value:string) => void
+  value:string,
+  onChange:(value:string) => void
 }) => {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -41,7 +81,7 @@ const RichTextEditor = ({ value, onChange }:{
     extensions: [
       StarterKit.configure({
         heading: {
-          levels: [1, 2, 3],
+          levels: [1, 2, 3, 4],
         },
         codeBlock: false,
       }),
@@ -85,7 +125,7 @@ const RichTextEditor = ({ value, onChange }:{
       }),
       CodeBlockLowlight.configure({
         lowlight,
-        defaultLanguage: 'plaintext',
+        defaultLanguage: 'javascript',
       }),
     ],
     content: value,
@@ -99,33 +139,31 @@ const RichTextEditor = ({ value, onChange }:{
     },
   });
 
-  const onDrop = useCallback(async (acceptedFiles:File[]) => {
-    if (!acceptedFiles.length || !editor) return;
+  const onDrop = useCallback(
+    async (acceptedFiles:File[]) => {
+      if (!acceptedFiles.length || !editor) return;
 
-    const file = acceptedFiles[0];
-    const mockUrl = URL.createObjectURL(file);
+      const file = acceptedFiles[0];
+      const mockUrl = URL.createObjectURL(file);
 
-    editor.chain().focus().setImage({ src: mockUrl }).run();
-  }, [editor]);
+      editor.chain().focus().setImage({ src: mockUrl }).run();
+    },
+    [editor]
+  );
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
     },
-    maxFiles: 1
+    maxFiles: 1,
   });
 
   const addLink = () => {
     if (!editor) return;
 
     if (linkUrl) {
-      editor
-        .chain()
-        .focus()
-        .extendMarkRange('link')
-        .setLink({ href: linkUrl })
-        .run();
+      editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
     } else {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
     }
@@ -153,14 +191,14 @@ const RichTextEditor = ({ value, onChange }:{
 
   return (
     <div className="max-w-4xl mx-auto my-8">
-      {/* Toolbar */}
       <div className="flex flex-wrap gap-2 mb-2 p-2 bg-zinc-100 dark:bg-zinc-700 rounded-t-lg border border-zinc-200 dark:border-zinc-600">
-        {/* Text formatting */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('bold') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('bold') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Bold"
         >
           <FaBold />
@@ -169,7 +207,9 @@ const RichTextEditor = ({ value, onChange }:{
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('italic') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('italic') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Italic"
         >
           <FaItalic />
@@ -177,7 +217,9 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('underline') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('underline') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Underline"
         >
           <FaUnderline />
@@ -186,7 +228,9 @@ const RichTextEditor = ({ value, onChange }:{
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
           disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('strike') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('strike') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Strikethrough"
         >
           <FaStrikethrough />
@@ -194,43 +238,59 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('highlight') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('highlight') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Highlight"
         >
           <MdHighlight />
         </button>
-
-        {/* Headings */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('heading', { level: 1 }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('heading', { level: 1 }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Heading 1"
         >
-          <FaHeading />1
+          H1
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('heading', { level: 2 }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('heading', { level: 2 }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Heading 2"
         >
-          <FaHeading />2
+          H2
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('heading', { level: 3 }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('heading', { level: 3 }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Heading 3"
         >
-          <FaHeading />3
+          H3
         </button>
-
-        {/* Lists */}
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('heading', { level: 4 }) ? 'bg-red-600 text-white' : ''
+          }`}
+          title="Heading 4"
+        >
+          H4
+        </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('bulletList') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('bulletList') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Bullet List"
         >
           <FaListUl />
@@ -238,17 +298,19 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('orderedList') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('orderedList') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Ordered List"
         >
           <FaListOl />
         </button>
-
-        {/* Text alignment */}
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive({ textAlign: 'left' }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive({ textAlign: 'left' }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Align Left"
         >
           <FaAlignLeft />
@@ -256,7 +318,9 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive({ textAlign: 'center' }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive({ textAlign: 'center' }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Align Center"
         >
           <FaAlignCenter />
@@ -264,7 +328,9 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive({ textAlign: 'right' }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive({ textAlign: 'right' }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Align Right"
         >
           <FaAlignRight />
@@ -272,18 +338,20 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive({ textAlign: 'justify' }) ? 'bg-red-600 text-white' : ''
+          }`}
           title="Justify"
         >
           <FaAlignJustify />
         </button>
-
-        {/* Code */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}
           disabled={!editor.can().chain().focus().toggleCode().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('code') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('code') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Inline Code"
         >
           <FaCode />
@@ -291,17 +359,19 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('codeBlock') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('codeBlock') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Code Block"
         >
-          <FaCode /> Block
+          {'</>'}
         </button>
-
-        {/* Block elements */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('blockquote') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('blockquote') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Blockquote"
         >
           <FaQuoteLeft />
@@ -314,8 +384,6 @@ const RichTextEditor = ({ value, onChange }:{
         >
           <FaMinus />
         </button>
-
-        {/* Tables */}
         <button
           type="button"
           onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
@@ -326,35 +394,6 @@ const RichTextEditor = ({ value, onChange }:{
         </button>
         <button
           type="button"
-          onClick={() => editor.chain().focus().addColumnAfter().run()}
-          disabled={!editor.can().addColumnAfter()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
-          title="Add Column"
-        >
-          +Col
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().addRowAfter().run()}
-          disabled={!editor.can().addRowAfter()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
-          title="Add Row"
-        >
-          +Row
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().deleteTable().run()}
-          disabled={!editor.can().deleteTable()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
-          title="Delete Table"
-        >
-          ×Table
-        </button>
-
-        {/* Links & Images */}
-        <button
-          type="button"
           onClick={() => {
             if (editor.isActive('link')) {
               editor.chain().focus().unsetLink().run();
@@ -363,7 +402,9 @@ const RichTextEditor = ({ value, onChange }:{
               setLinkUrl(editor.getAttributes('link').href || '');
             }
           }}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('link') ? 'bg-red-600 text-white' : ''}`}
+          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+            editor.isActive('link') ? 'bg-red-600 text-white' : ''
+          }`}
           title="Link"
         >
           <FaLink />
@@ -385,8 +426,6 @@ const RichTextEditor = ({ value, onChange }:{
         >
           URL Image
         </button>
-
-        {/* History */}
         <button
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
@@ -407,25 +446,30 @@ const RichTextEditor = ({ value, onChange }:{
         </button>
       </div>
 
-      {/* Bubble Menu (appears when selecting text) */}
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
           <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-600">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('bold') ? 'bg-red-600 text-white' : ''}`}
+              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+                editor.isActive('bold') ? 'bg-red-600 text-white' : ''
+              }`}
             >
               Bold
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('italic') ? 'bg-red-600 text-white' : ''}`}
+              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+                editor.isActive('italic') ? 'bg-red-600 text-white' : ''
+              }`}
             >
               Italic
             </button>
             <button
               onClick={() => editor.chain().focus().toggleLink({ href: linkUrl }).run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${editor.isActive('link') ? 'bg-red-600 text-white' : ''}`}
+              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
+                editor.isActive('link') ? 'bg-red-600 text-white' : ''
+              }`}
             >
               Link
             </button>
@@ -433,10 +477,8 @@ const RichTextEditor = ({ value, onChange }:{
         </BubbleMenu>
       )}
 
-      {/* Editor Content */}
-      <EditorContent editor={editor} />
+      <EditorContent className="raw-html" style={{ all: 'revert' }} editor={editor} />
 
-      {/* Link Modal */}
       {isLinkModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg">
@@ -467,7 +509,6 @@ const RichTextEditor = ({ value, onChange }:{
         </div>
       )}
 
-      {/* Image Modal */}
       <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
         <h3 className="text-lg font-medium mb-2">Insert Image by URL</h3>
         <div className="flex gap-2">
