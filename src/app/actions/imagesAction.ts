@@ -114,7 +114,7 @@ export const uploadAndSaveImages = async ({
         await newImage.save();
 
         const uploadedImage = {
-          _id: newImage?._id,
+          _id: String(newImage?._id),
           url: newImage?.url,
           uploadedAt: new Date(newImage?.uploadedAt),
           fileId: newImage?.fileId,
@@ -170,7 +170,7 @@ export const getAllImages = async ({ userId }: GetParams): Promise<GetResult> =>
       .sort({ uploadedAt: -1 })
       .lean();
     const newImages = images.map((img) => ({
-      _id: img._id,
+      _id: String(img._id),
       url: img.url,
       uploadedAt: new Date(img.uploadedAt),
       fileId: img.fileId,

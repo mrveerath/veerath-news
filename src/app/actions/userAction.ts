@@ -1,7 +1,7 @@
 "use server";
 import { Types } from "mongoose";
 import { dbConnect } from "@/lib/dbConnect";
-import { User } from "@/models/user.model";
+import User from "@/models/user.model";
 
 // Interface for the complete user response (excluding sensitive fields)
 interface UserResponse {
@@ -32,8 +32,9 @@ interface Passwords {
 // Standard response interface
 interface ApiResponse<T> {
     success: boolean;
-    data: T;
-    message?: string;
+    error?: boolean;
+    data: T | null;
+    message: string;
 }
 
 // Password complexity regex
@@ -46,16 +47,15 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@
  */
 export async function getUserDetails(
     userId: string
-): Promise<ApiResponse<UserResponse | string>> {
+): Promise<ApiResponse<UserResponse>> {
     await dbConnect();
-    console.log("Getting User Details...")
     try {
-
-        // Validate userId format
         if (!Types.ObjectId.isValid(userId)) {
             return {
                 success: false,
-                data: "Invalid User ID format",
+                error: true,
+                data: null,
+                message: "Invalid User ID format",
             };
         }
 
@@ -64,13 +64,14 @@ export async function getUserDetails(
         if (!user || user.isDeleted) {
             return {
                 success: false,
-                data: "User not found",
+                error: true,
+                data: null,
+                message: "User not found",
             };
         }
 
-        // Convert Mongoose document to plain object
         const userData: UserResponse = {
-            _id: user._id,
+            _id: String(user._id),
             userName: user.userName,
             email: user.email,
             profileImage: user.profileImage || null,
@@ -82,13 +83,17 @@ export async function getUserDetails(
 
         return {
             success: true,
+            error: false,
             data: userData,
+            message: "User details fetched successfully",
         };
     } catch (error) {
         console.error("[USER_GET_ERROR]", error);
         return {
             success: false,
-            data: "An error occurred while fetching user details",
+            error: true,
+            data: null,
+            message: "An error occurred while fetching user details",
         };
     }
 }
@@ -102,27 +107,28 @@ export async function getUserDetails(
 export async function updateUserDetails(
     userId: string,
     userDetails: UserDetails
-): Promise<ApiResponse<UserResponse | string>> {
+): Promise<ApiResponse<UserResponse>> {
     try {
         await dbConnect();
 
-        // Validate userId format
         if (!Types.ObjectId.isValid(userId)) {
             return {
                 success: false,
-                data: "Invalid User ID format",
+                error: true,
+                data: null,
+                message: "Invalid User ID format",
             };
         }
 
-        // Validate input
         if (!userDetails || !userDetails.userName || !userDetails.email || !userDetails.fullName) {
             return {
                 success: false,
-                data: "All required fields must be provided",
+                error: true,
+                data: null,
+                message: "All required fields must be provided",
             };
         }
 
-        // Check for duplicate username or email
         const existingUser = await User.findOne({
             $or: [
                 { userName: userDetails.userName },
@@ -134,13 +140,14 @@ export async function updateUserDetails(
         if (existingUser) {
             return {
                 success: false,
-                data: existingUser.userName === userDetails.userName
+                error: true,
+                data: null,
+                message: existingUser.userName === userDetails.userName
                     ? "Username already in use"
                     : "Email already in use",
             };
         }
 
-        // Prepare update data
         const updateData = {
             userName: userDetails.userName,
             email: userDetails.email,
@@ -157,13 +164,14 @@ export async function updateUserDetails(
         if (!user) {
             return {
                 success: false,
-                data: "User not found or has been deleted",
+                error: true,
+                data: null,
+                message: "User not found or has been deleted",
             };
         }
 
-        // Convert Mongoose document to plain object
         const updatedUser: UserResponse = {
-            _id: user._id,
+            _id: String(user._id),
             userName: user.userName,
             email: user.email,
             profileImage: user.profileImage || null,
@@ -175,13 +183,17 @@ export async function updateUserDetails(
 
         return {
             success: true,
+            error: false,
             data: updatedUser,
+            message: "User details updated successfully",
         };
     } catch (error) {
         console.error("[USER_UPDATE_ERROR]", error);
         return {
             success: false,
-            data: "An error occurred while updating user details",
+            error: true,
+            data: null,
+            message: "An error occurred while updating user details",
         };
     }
 }
@@ -199,69 +211,79 @@ export async function updateUserPassword(
     try {
         await dbConnect();
 
-        // Validate userId format
         if (!Types.ObjectId.isValid(userId)) {
             return {
                 success: false,
-                data: "Invalid User ID format",
+                error: true,
+                data: null,
+                message: "Invalid User ID format",
             };
         }
 
-        // Validate passwords object
         if (!passwords?.oldPassword || !passwords?.newPassword) {
             return {
                 success: false,
-                data: "Both old and new passwords are required",
+                error: true,
+                data: null,
+                message: "Both old and new passwords are required",
             };
         }
 
-        // Check password complexity
         if (!PASSWORD_REGEX.test(passwords.newPassword)) {
             return {
                 success: false,
-                data: "Password must contain at least 8 characters, including uppercase, lowercase, number and special character",
+                error: true,
+                data: null,
+                message: "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character",
             };
         }
 
-        const existingUser = await User.findById(userId);
+        const existingUser = await User.findById(userId).select("+password");
         if (!existingUser) {
             return {
                 success: false,
-                data: "User not found",
+                error: true,
+                data: null,
+                message: "User not found",
             };
         }
 
-        // Verify old password
         const isPasswordCorrect = await existingUser.validatePassword(passwords.oldPassword);
         if (!isPasswordCorrect) {
             return {
                 success: false,
-                data: "Incorrect old password",
+                error: true,
+                data: null,
+                message: "Incorrect old password",
             };
         }
 
-        // Check if new password is same as old
         const isSamePassword = await existingUser.validatePassword(passwords.newPassword);
         if (isSamePassword) {
             return {
                 success: false,
-                data: "New password cannot be the same as old password",
+                error: true,
+                data: null,
+                message: "New password cannot be the same as old password",
             };
         }
 
-        // Set the new password (will be hashed by the pre-save hook)
         existingUser.password = passwords.newPassword;
         await existingUser.save({ validateBeforeSave: true });
 
         return {
             success: true,
-            data: "Password updated successfully",
+            error: false,
+            data: null,
+            message: "Password updated successfully",
         };
     } catch (error) {
         console.error("[PASSWORD_UPDATE_ERROR]", error);
         return {
             success: false,
-            data: "An error occurred while updating password",
+            error: true,
+            data: null,
+            message: "An error occurred while updating password",
         };
     }
 }

@@ -8,10 +8,14 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../actions/imagesAction";
-import { getUserDetails, updateUserDetails, updateUserPassword, UserResponse } from "../actions/userAction";
 import UpdateUserForm from "@/components/UpdateUserForm";
 import ChangePasswordForm from "@/components/ChangePassword";
-import { signOut } from "@/lib/auth";
+import { signOut } from "next-auth/react";
+import axios from "axios";
+import { getUserDetails, updateUserDetails, updateUserPassword } from "../actions/userAction";
+
+// Optional: Set Axios base URL
+axios.defaults.baseURL = "/api";
 
 export default function ProfilePage(): React.ReactElement {
   const { data } = useSession();
@@ -19,31 +23,75 @@ export default function ProfilePage(): React.ReactElement {
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
   const [uploadedAssets, setUploadedAssets] = useState<ImageType[]>([]);
   const [activeTab, setActiveTab] = useState<'assets' | 'blogs' | 'userSetting'>('blogs');
-  const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
+  const [userDetails, setUserDetails] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const userId = data?.user.id || "";
 
   // Fetch user data
   const getUser = useCallback(async () => {
     if (!userId) return;
-    
+
     try {
       setIsLoading(true);
-      const { success, data } = await getUserDetails(userId);
+      const { success, data, message, error } = await getUserDetails(userId);
+
       if (!success) {
-        toast.error("Failed to load user details");
+        toast.error(message || "Failed to load user details");
         return;
       }
-      setUserDetails(data as UserResponse);
+      setUserDetails(data);
     } catch (error) {
-      console.log(error)
+      console.error(error);
       toast.error("An error occurred while loading user data");
     } finally {
       setIsLoading(false);
     }
   }, [userId]);
 
-  // Handle image upload
+  // Handle profile update
+  const handleUserDetailsSubmit = useCallback(async (details: {
+    userName: string;
+    email: string;
+    fullName: string;
+    profileImage?: string;
+  }) => {
+    try {
+      const { success, data, message, error } = await updateUserDetails(userId, details);
+
+      if (success) {
+        toast.success("Profile updated successfully");
+        setUserDetails(data);
+      } else {
+        toast.error(message || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred");
+    }
+  }, [userId]);
+
+  // Handle password change
+  const handlePasswordChange = useCallback(async (passwords: {
+    oldPassword: string;
+    newPassword: string;
+  }) => {
+    try {
+
+      const { success, message, error, data } = await updateUserPassword(userId, passwords);
+
+      if (success) {
+        toast.success("Password updated successfully");
+        await signOut();
+      } else {
+        toast.error(message || "Failed to update password");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred");
+    }
+  }, [userId]);
+
+  // Handle image upload (unchanged)
   const handleUploadAssets = useCallback(async () => {
     if (imagesToUpload.length === 0) {
       return toast.warning("Please select at least one image");
@@ -61,15 +109,15 @@ export default function ProfilePage(): React.ReactElement {
         setShowImageUploadForm(false);
         setImagesToUpload([]);
       } else {
-        toast.error( "Failed to upload images");
+        toast.error("Failed to upload images");
       }
     } catch (error) {
-      console.log(error)
+      console.error(error);
       toast.error("An unexpected error occurred during upload");
     }
   }, [imagesToUpload, userId]);
 
-  // Handle image deletion
+  // Handle image deletion (unchanged)
   const handleDeleteImage = useCallback(async (imageId: string) => {
     try {
       const { success, error } = await deleteImage({ imageId, userId });
@@ -80,70 +128,28 @@ export default function ProfilePage(): React.ReactElement {
         toast.error(error || "Failed to delete image");
       }
     } catch (error) {
-      console.log(error)
+      console.error(error);
       toast.error("An unexpected error occurred");
     }
   }, [userId]);
 
-  // Copy image URL to clipboard
+  // Copy image URL to clipboard (unchanged)
   const handleCopyUrl = useCallback((url: string) => {
     navigator.clipboard.writeText(url);
     toast.success("Image URL copied to clipboard");
   }, []);
 
-  // Fetch user images
+  // Fetch user images (unchanged)
   const getImages = useCallback(async () => {
     try {
       const { success, images } = await getAllImages({ userId });
       if (success && Array.isArray(images)) {
         setUploadedAssets(images);
       } else {
-        toast.error( "Failed to load images");
+        toast.error("Failed to load images");
       }
     } catch (error) {
-      console.log(error)
-      toast.error("An unexpected error occurred");
-    }
-  }, [userId]);
-
-  // Handle profile update
-  const handleUserDetailsSubmit = useCallback(async (details: {
-    userName: string;
-    email: string;
-    fullName: string;
-    profileImage?: string;
-  }) => {
-    try {
-      const { success, message } = await updateUserDetails(userId, details);
-      
-      if (success) {
-        toast.success("Profile updated successfully");
-        getUser();
-      } else {
-        toast.error(message || "Failed to update profile");
-      }
-    } catch (error) {
-      console.log(error)
-      toast.error("An unexpected error occurred");
-    }
-  }, [userId, getUser]);
-
-  // Handle password change
-  const handlePasswordChange = useCallback(async (passwords: {
-    oldPassword: string;
-    newPassword: string;
-  }) => {
-    try {
-      const { success, message } = await updateUserPassword(userId, passwords);
-      
-      if (success) {
-        toast.success("Password updated successfully");
-        signOut()
-      } else {
-        toast.error(message || "Failed to update password");
-      }
-    } catch (error) {
-      console.log(error)
+      console.error(error);
       toast.error("An unexpected error occurred");
     }
   }, [userId]);
@@ -156,10 +162,11 @@ export default function ProfilePage(): React.ReactElement {
     }
   }, [userId, getImages, getUser]);
 
+  // Rest of the component remains unchanged
   if (isLoading) {
     return (
       <div className="flex min-h-screen bg-zinc-950 text-zinc-100 items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+        <div className="animate-spin rounded-none h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
       </div>
     );
   }
@@ -169,7 +176,7 @@ export default function ProfilePage(): React.ReactElement {
       {/* Sidebar */}
       <aside className="w-72 bg-zinc-900 p-6 flex flex-col gap-6 border-r border-zinc-800 sticky top-0 h-screen">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-40 h-40 bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-red-700 rounded-full">
+          <div className="w-40 h-40 bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-red-700 rounded-none">
             {userDetails?.profileImage ? (
               <Image
                 src={userDetails?.profileImage}
@@ -222,8 +229,8 @@ export default function ProfilePage(): React.ReactElement {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-zinc-100">
-            {activeTab === 'assets' ? 'Media Assets' : 
-             activeTab === 'blogs' ? 'Blog Posts' : 'Account Settings'}
+            {activeTab === 'assets' ? 'Media Assets' :
+              activeTab === 'blogs' ? 'Blog Posts' : 'Account Settings'}
           </h1>
           {activeTab === 'assets' && (
             <Button
@@ -249,7 +256,7 @@ export default function ProfilePage(): React.ReactElement {
               uploadedAssets.map((img) => (
                 <div
                   key={img._id}
-                  className="relative group bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-all"
+                  className="relative group bg-zinc-900 border border-zinc-800 rounded-none hover:border-zinc-700 transition-all"
                 >
                   <div className="aspect-square overflow-hidden rounded-t-lg">
                     <Image
@@ -287,7 +294,7 @@ export default function ProfilePage(): React.ReactElement {
                 </div>
               ))
             ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 border border-zinc-800 bg-zinc-900 rounded-lg">
+              <div className="col-span-full flex flex-col items-center justify-center py-12 border border-zinc-800 bg-zinc-900 rounded-none">
                 <FileImage className="h-12 w-12 text-zinc-600 mb-4" />
                 <h3 className="text-lg font-medium text-zinc-300 mb-2">No assets uploaded yet</h3>
                 <p className="text-zinc-500 mb-4">Upload your first asset to get started</p>
@@ -303,7 +310,7 @@ export default function ProfilePage(): React.ReactElement {
         )}
 
         {activeTab === 'blogs' && (
-          <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-8 flex flex-col items-center justify-center min-h-[400px]">
+          <div className="border border-zinc-800 bg-zinc-900 rounded-none p-8 flex flex-col items-center justify-center min-h-[400px]">
             <BookText className="h-12 w-12 text-zinc-600 mb-4" />
             <h3 className="text-lg font-medium text-zinc-300 mb-2">No blog posts yet</h3>
             <p className="text-zinc-500 mb-4">Create your first blog post to get started</p>
@@ -314,13 +321,8 @@ export default function ProfilePage(): React.ReactElement {
         )}
 
         {activeTab === 'userSetting' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-800">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
-                <User className="h-5 w-5" />
-                Profile Details
-              </h2>
-              <UpdateUserForm 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-zinc-900 p-6  border border-zinc-800">
+              <UpdateUserForm
                 userDetails={{
                   userName: userDetails?.userName || "",
                   email: userDetails?.email || "",
@@ -329,17 +331,10 @@ export default function ProfilePage(): React.ReactElement {
                 }}
                 onUserDetailsSubmit={handleUserDetailsSubmit}
               />
-            </div>
-            
-            <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-800">
-              <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
-                <Settings className="h-5 w-5" />
-                Change Password
-              </h2>
-              <ChangePasswordForm 
+              
+              <ChangePasswordForm
                 handleChangePassword={handlePasswordChange}
               />
-            </div>
           </div>
         )}
       </main>
@@ -347,7 +342,7 @@ export default function ProfilePage(): React.ReactElement {
       {/* Image Upload Modal */}
       {showImageUploadForm && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 p-6 w-full max-w-lg border border-zinc-800 rounded-lg shadow-lg">
+          <div className="bg-zinc-900 p-6 w-full max-w-lg border border-zinc-800 rounded-none shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-zinc-100">Upload Assets</h2>
               <Button

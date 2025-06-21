@@ -2,7 +2,7 @@ import { Label } from "@radix-ui/react-label";
 import React, { FormEvent, useCallback, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Settings } from "lucide-react";
 
 export interface Passwords {
   oldPassword: string;
@@ -77,10 +77,11 @@ export default function ChangePasswordForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none border border-zinc-800">
-      <h1 className="text-2xl font-bold text-zinc-100 mb-6 text-center">
+    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
+        <Settings className="h-5 w-5" />
         Change Your Password
-      </h1>
+      </h2>
       <form onSubmit={handleFormSubmit} className="space-y-7">
         <div className="space-y-2">
           <Label htmlFor="oldPassword" className="text-zinc-300 block mb-1">

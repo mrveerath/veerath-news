@@ -2,7 +2,7 @@ import { Label } from "@radix-ui/react-label";
 import React, { FormEvent, useCallback, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 
 export interface UserDetailsUpdate {
   userName: string;
@@ -87,10 +87,11 @@ export default function UpdateUserForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none border border-zinc-800">
-      <h1 className="text-2xl font-bold text-zinc-100 mb-6 text-center">
+    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none ">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
+        <User className="h-5 w-5" />
         Update Profile Details
-      </h1>
+      </h2>
       <form onSubmit={handleFormSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email" className="text-zinc-300 block mb-1">

@@ -2,7 +2,7 @@
 "use server";
 
 import { dbConnect } from "@/lib/dbConnect";
-import { User } from "@/models/user.model";
+import User from "@/models/user.model";
 
 interface Response {
   error:string

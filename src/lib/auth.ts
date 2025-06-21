@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { User } from "@/models/user.model";
+import User from "@/models/user.model";
 import { dbConnect } from "@/lib/dbConnect";
 import { object, string } from "zod";
 import type { User as AuthUser } from "next-auth";
@@ -55,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }).select("+password"); // Include password for validation
 
                     if (!user) {
-                        throw new CustomAuthError("Invalid credentials", "CredentialsSignin");
+                        throw new CustomAuthError("User Doesn't exist", "CredentialsSignin");
                     }
                     if(user.isDeleted){
                         throw new CustomAuthError("User Is Deleted", "CredentialsSignin");
@@ -64,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     // Validate password
                     const isValidPassword = await user.validatePassword(password);
                     if (!isValidPassword) {
-                        throw new CustomAuthError("Invalid credentials", "CredentialsSignin");
+                        throw new CustomAuthError("Invalid Password", "CredentialsSignin");
                     }
 
                     // Return sanitized user object
