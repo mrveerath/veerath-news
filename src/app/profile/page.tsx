@@ -12,7 +12,7 @@ import UpdateUserForm from "@/components/UpdateUserForm";
 import ChangePasswordForm from "@/components/ChangePassword";
 import { signOut } from "next-auth/react";
 import axios from "axios";
-import { getUserDetails, updateUserDetails, updateUserPassword } from "../actions/userAction";
+import { getUserDetails, updateUserDetails, updateUserPassword, UserResponse } from "../actions/userAction";
 
 // Optional: Set Axios base URL
 axios.defaults.baseURL = "/api";
@@ -23,7 +23,7 @@ export default function ProfilePage(): React.ReactElement {
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
   const [uploadedAssets, setUploadedAssets] = useState<ImageType[]>([]);
   const [activeTab, setActiveTab] = useState<'assets' | 'blogs' | 'userSetting'>('blogs');
-  const [userDetails, setUserDetails] = useState<any | null>(null);
+  const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const userId = data?.user.id || "";
 
