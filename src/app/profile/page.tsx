@@ -34,7 +34,7 @@ export default function ProfilePage(): React.ReactElement {
     try {
       setIsLoading(true);
       const { success, data, message, error } = await getUserDetails(userId);
-
+      console.log(error)
       if (!success) {
         toast.error(message || "Failed to load user details");
         return;
@@ -57,7 +57,7 @@ export default function ProfilePage(): React.ReactElement {
   }) => {
     try {
       const { success, data, message, error } = await updateUserDetails(userId, details);
-
+console.log(error)
       if (success) {
         toast.success("Profile updated successfully");
         setUserDetails(data);
@@ -78,7 +78,8 @@ export default function ProfilePage(): React.ReactElement {
     try {
 
       const { success, message, error, data } = await updateUserPassword(userId, passwords);
-
+console.log(error)
+console.log(data)
       if (success) {
         toast.success("Password updated successfully");
         await signOut();
