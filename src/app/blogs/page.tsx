@@ -1,3 +1,4 @@
+"use client"
 import React, { useCallback, useEffect, useState } from "react"
 import { getPaginatedBlogs } from "../actions/blogsAction"
 import { toast } from "sonner"
