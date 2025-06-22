@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import RichTextEditor from './Editor/Editor'; // Make sure the path is correct
 import { simulateServerSideAction } from '../actions/createBlog';
+import { createBlog } from '../actions/blogsAction';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export interface BlogData {
   title: string;
@@ -23,6 +26,8 @@ export interface BlogData {
 
 export default function Page(): React.ReactElement {
   const { data } = useSession();
+  const router = useRouter()
+  const userId = data?.user.id
   const [blogData, setBlogData] = useState<BlogData>({
     title: '',
     slug: '',
@@ -34,7 +39,7 @@ export default function Page(): React.ReactElement {
     tags: [],
     isPublished: false,
     publishedAt: new Date().toISOString().split('T')[0],
-    userId:data?.user.id
+    userId:userId
   });
 
   
@@ -105,8 +110,12 @@ export default function Page(): React.ReactElement {
     e.preventDefault();
     if (validate()) {
       setIsSubmitting(true);
-      const isCreated = await simulateServerSideAction(blogData);
-      console.log(isCreated)
+      const {message,success,data,error} = await createBlog(blogData)
+      if(success){
+        toast.success(message)
+        router.push(`/blogs/${data?._id}`)
+      }
+      console.log(error)
       setIsSubmitting(false);
     }
   }, [blogData, validate]);

@@ -38,7 +38,7 @@ export function Navbar() {
                     <Link href="/" className="flex items-center gap-2">
                         <Image
                             alt="logo"
-                            src="/logo.png"
+                            src="/navLogo.png"
                             width={32}
                             height={32}
                             className="h-4 w-16"

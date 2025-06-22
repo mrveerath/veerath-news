@@ -1,4 +1,4 @@
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import React, { useRef } from "react";
 
@@ -47,17 +47,17 @@ export default function Imagepkr({
             {/* Upload button with drag-and-drop support */}
             <button
                 aria-label="Upload images"
-                className="cursor-pointer  flex items-center justify-center rounded-md h-40 w-28 shadow-md"
+                className="cursor-pointer flex items-center justify-center rounded-md h-40 w-28 border-2 border-dashed border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
                 onClick={() => pickerRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
             >
-                <span className="text-4xl text-red-600 flex flex-col items-center justify-center ">
-                    <ImagePlus />
-                    <span className="flex flex-col mt-4">
-                        <span className="text-sm">Upload</span>
-                        <span className="text-sm">Or</span>
-                        <span className="text-sm">Drop</span>
+                <span className="flex flex-col items-center justify-center text-red-600">
+                    <ImagePlus className="h-8 w-8" />
+                    <span className="flex flex-col items-center mt-3 text-xs text-zinc-600 dark:text-zinc-400">
+                        <span>Upload</span>
+                        <span>or</span>
+                        <span>Drop</span>
                     </span>
                 </span>
                 <input
@@ -74,21 +74,23 @@ export default function Imagepkr({
 
             {/* Display selected images */}
             {images.map((image) => (
-                <span className="relative" key={image.name}>
+                <div className="relative group" key={image.name}>
                     <button
                         onClick={() => handleErase(image)}
-                        className="absolute h-6 w-6 bg-red-500 rounded-full -top-2 -right-2 text-white"
+                        className="absolute -top-2 -right-2 h-6 w-6 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors z-10"
                     >
-                        X
+                        <X className="h-4 w-4" />
                     </button>
-                    <Image
-                        className="h-40 w-28 rounded-md object-cover"
-                        src={URL.createObjectURL(image)}
-                        alt={image.name}
-                        height={200}
-                        width={200}
-                    />
-                </span>
+                    <div className="h-40 w-28 rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                        <Image
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                            src={URL.createObjectURL(image)}
+                            alt={image.name}
+                            height={200}
+                            width={200}
+                        />
+                    </div>
+                </div>
             ))}
         </div>
     );

@@ -74,7 +74,6 @@ export default function UpdateUserForm({
         try {
           await onUserDetailsSubmit(updatedUserData);
         } catch (error) {
-          // Handle API errors here if needed
           console.error("Update failed:", error);
         } finally {
           setIsSubmitting(false);
@@ -87,14 +86,14 @@ export default function UpdateUserForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none ">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
-        <User className="h-5 w-5" />
+    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-zinc-800 rounded-none ">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
+        <User className="h-5 w-5 text-red-600" />
         Update Profile Details
       </h2>
       <form onSubmit={handleFormSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-zinc-300 block mb-1">
+          <Label htmlFor="email" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             Email
           </Label>
           <Input
@@ -103,16 +102,16 @@ export default function UpdateUserForm({
             name="email"
             placeholder="Email"
             defaultValue={userDetails.email}
-            className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
           {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.email}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="userName" className="text-zinc-300 block mb-1">
+          <Label htmlFor="userName" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             Username
           </Label>
           <Input
@@ -121,16 +120,16 @@ export default function UpdateUserForm({
             name="userName"
             defaultValue={userDetails.userName}
             placeholder="Username"
-            className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
           {errors.userName && (
-            <p className="text-red-500 text-sm">{errors.userName}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.userName}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="fullName" className="text-zinc-300 block mb-1">
+          <Label htmlFor="fullName" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             Full Name
           </Label>
           <Input
@@ -139,16 +138,16 @@ export default function UpdateUserForm({
             name="fullName"
             defaultValue={userDetails.fullName}
             placeholder="Full Name"
-            className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
           {errors.fullName && (
-            <p className="text-red-500 text-sm">{errors.fullName}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.fullName}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="profileImage" className="text-zinc-300 block mb-1">
+          <Label htmlFor="profileImage" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             Profile Image URL
           </Label>
           <Input
@@ -157,16 +156,16 @@ export default function UpdateUserForm({
             name="profileImage"
             defaultValue={userDetails.profileImage}
             placeholder="https://example.com/profile.jpg"
-            className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
           />
           {errors.profileImage && (
-            <p className="text-red-500 text-sm">{errors.profileImage}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.profileImage}</p>
           )}
         </div>
 
         <Button
           type="submit"
-          className="w-full mt-6 bg-red-700 hover:bg-red-800 text-white rounded-none flex items-center justify-center gap-2"
+          className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white rounded-none flex items-center justify-center gap-2"
           disabled={isSubmitting}
         >
           {isSubmitting ? (

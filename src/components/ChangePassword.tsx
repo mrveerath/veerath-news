@@ -2,7 +2,7 @@ import { Label } from "@radix-ui/react-label";
 import React, { FormEvent, useCallback, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Eye, EyeOff, Settings } from "lucide-react";
+import { Eye, EyeOff, Settings, Loader2 } from "lucide-react";
 
 export interface Passwords {
   oldPassword: string;
@@ -17,7 +17,7 @@ interface FormErrors {
 export default function ChangePasswordForm({
   handleChangePassword
 }: {
-  handleChangePassword: (updatedPasswordData: Passwords) => void;
+  handleChangePassword: (updatedPasswordData: Passwords) => Promise<void> | void;
 }): React.ReactElement {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -77,14 +77,14 @@ export default function ChangePasswordForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full p-6 bg-zinc-900 rounded-none">
-      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-100">
-        <Settings className="h-5 w-5" />
+    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-zinc-800 rounded-none ">
+      <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
+        <Settings className="h-5 w-5 text-red-600" />
         Change Your Password
       </h2>
-      <form onSubmit={handleFormSubmit} className="space-y-7">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="oldPassword" className="text-zinc-300 block mb-1">
+          <Label htmlFor="oldPassword" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             Current Password
           </Label>
           <div className="relative">
@@ -93,26 +93,26 @@ export default function ChangePasswordForm({
               id="oldPassword"
               name="oldPassword"
               placeholder="Enter current password"
-              className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none pr-10"
+              className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none pr-10"
               required
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3 text-zinc-400 hover:text-zinc-100"
+              className="absolute right-0 top-0 h-full px-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100"
               onClick={() => setShowOldPassword(!showOldPassword)}
             >
               {showOldPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </Button>
           </div>
           {errors.oldPassword && (
-            <p className="text-red-500 text-sm">{errors.oldPassword}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.oldPassword}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="newPassword" className="text-zinc-300 block mb-1">
+          <Label htmlFor="newPassword" className="text-zinc-700 dark:text-zinc-300 block mb-1">
             New Password
           </Label>
           <div className="relative">
@@ -121,42 +121,42 @@ export default function ChangePasswordForm({
               id="newPassword"
               name="newPassword"
               placeholder="Enter new password"
-              className="border-zinc-700 bg-zinc-800 text-zinc-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none pr-10"
+              className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none pr-10"
               required
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3 text-zinc-400 hover:text-zinc-100"
+              className="absolute right-0 top-0 h-full px-3 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100"
               onClick={() => setShowNewPassword(!showNewPassword)}
             >
               {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </Button>
           </div>
           {errors.newPassword && (
-            <p className="text-red-500 text-sm">{errors.newPassword}</p>
+            <p className="text-red-600 text-sm mt-1">{errors.newPassword}</p>
           )}
-          <div className="text-zinc-400 text-xs mt-1">
+          <div className="text-zinc-600 dark:text-zinc-400 text-xs mt-2">
             Password must contain:
             <ul className="list-disc list-inside space-y-1 mt-1">
-              <li className={/^.{8,}$/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
+              <li className={errors.newPassword?.includes("8 characters") ? "text-red-600" : ""}>
                 At least 8 characters
               </li>
-              <li className={/[A-Z]/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
+              <li className={errors.newPassword?.includes("uppercase") ? "text-red-600" : ""}>
                 One uppercase letter
               </li>
-              <li className={/[a-z]/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
+              <li className={errors.newPassword?.includes("lowercase") ? "text-red-600" : ""}>
                 One lowercase letter
               </li>
-              <li className={/[0-9]/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
+              <li className={errors.newPassword?.includes("number") ? "text-red-600" : ""}>
                 One number
               </li>
-              <li className={/[^A-Za-z0-9]/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
+              <li className={errors.newPassword?.includes("special character") ? "text-red-600" : ""}>
                 One special character
               </li>
-              <li className={/[^A-Za-z0-9]/.test(errors.newPassword || "") ? "text-red-500" : "text-red-500"}>
-                Both Password Can `&apos;`t Be Same
+              <li className={errors.newPassword?.includes("different from current") ? "text-red-600" : ""}>
+                Different from current password
               </li>
             </ul>
           </div>
@@ -164,10 +164,17 @@ export default function ChangePasswordForm({
 
         <Button
           type="submit"
-          className="w-full mt-6 bg-red-700 hover:bg-red-800 text-white rounded-none flex items-center justify-center gap-2"
+          className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white rounded-none flex items-center justify-center gap-2"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Updating..." : "Update Password"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            "Update Password"
+          )}
         </Button>
       </form>
     </div>
