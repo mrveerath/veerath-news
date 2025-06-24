@@ -13,7 +13,7 @@ export async function registerUser(formData: FormData): Promise<Response> {
   try {
     await dbConnect();
 
-    const { userName, email, password, fullName, avatarUrl } = Object.fromEntries(formData);
+    const { userName, email, password, fullName } = Object.fromEntries(formData);
 
     // Validate form data
     if (!userName || !email || !password || !fullName) {
@@ -32,7 +32,6 @@ export async function registerUser(formData: FormData): Promise<Response> {
       email,
       password,
       fullName,
-      avatarUrl: avatarUrl || null,
     });
 
     await newUser.save();

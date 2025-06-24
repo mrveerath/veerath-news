@@ -11,6 +11,7 @@ interface UserResponse {
     profileImage?: string | null;
     fullName: string;
     interests: string[];
+    bio:string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -21,6 +22,7 @@ interface UserDetails {
     email: string;
     profileImage?: string;
     fullName: string;
+    bio:string
 }
 
 // Interface for password change
@@ -35,6 +37,15 @@ interface ApiResponse<T> {
     error?: boolean;
     data: T | null;
     message: string;
+}
+export interface CompleteUserDetails {
+    userName: string;
+    email: string;
+    profileImage: string;
+    fullName: string;
+    bio: string;
+    savedPost: string[];
+    interests: string[];
 }
 
 // Password complexity regex
@@ -196,6 +207,46 @@ export async function updateUserDetails(
             message: "An error occurred while updating user details",
         };
     }
+}
+
+export async function getCompleteUserDetails(userId: string): Promise<ApiResponse<CompleteUserDetails>> {
+    try {
+        await dbConnect();
+
+        if (!Types.ObjectId.isValid(userId)) {
+            return {
+                success: false,
+                error: true,
+                data: null,
+                message: "Invalid User ID format",
+            };
+        }
+        const userDetails = await User.findById(userId).select("-password")
+        const userToReturn = {
+            userName: userDetails.userName,
+            email: userDetails.email,
+            profileImage: userDetails.profileImage,
+            fullName: userDetails.fullName,
+            bio: userDetails.bio,
+            savedPost: userDetails.savedPost,
+            interests: userDetails.interests,
+        }
+
+        return {
+            success: true,
+            error: false,
+            data: userToReturn,
+            message: "User Details Fetched Successfully",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: true,
+            data: null,
+            message: "An error occurred while updating user details",
+        };
+    }
+
 }
 
 /**

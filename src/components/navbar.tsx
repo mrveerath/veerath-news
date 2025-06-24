@@ -60,27 +60,8 @@ export function Navbar() {
                             </NavigationMenuItem>
 
                             <NavigationMenuItem>
-                                <NavigationMenuTrigger className="rounded-none hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                                    Trending
-                                </NavigationMenuTrigger>
-                                <NavigationMenuContent className="rounded-none border-zinc-200 dark:border-zinc-900">
-                                    <ul className="grid w-[400px] gap-0 p-0 md:w-[500px] md:grid-cols-2 lg:w-[400px]">
-                                        {components.map((component) => (
-                                            <ListItem
-                                                key={component.title}
-                                                title={component.title}
-                                                href={component.href}
-                                            >
-                                                {component.description}
-                                            </ListItem>
-                                        ))}
-                                    </ul>
-                                </NavigationMenuContent>
-                            </NavigationMenuItem>
-
-                            <NavigationMenuItem>
                                 <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "rounded-none")}>
-                                    <Link href="/create-blog" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                                    <Link href="/blogs" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
                                         Blogs
                                     </Link>
                                 </NavigationMenuLink>
@@ -90,14 +71,6 @@ export function Navbar() {
                                 <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "rounded-none")}>
                                     <Link href="/create-blog" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
                                         Create
-                                    </Link>
-                                </NavigationMenuLink>
-                            </NavigationMenuItem>
-
-                            <NavigationMenuItem>
-                                <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "rounded-none")}>
-                                    <Link href="/about" className="hover:bg-zinc-100 dark:hover:bg-zinc-900">
-                                        About
                                     </Link>
                                 </NavigationMenuLink>
                             </NavigationMenuItem>
@@ -136,31 +109,13 @@ export function Navbar() {
                                         Home
                                     </Link>
 
-                                    <div className="flex flex-col border-b border-zinc-200 dark:border-zinc-900">
-                                        <span className="p-3 font-medium border-b border-zinc-200 dark:border-zinc-900">Trending</span>
-                                        <div className="flex flex-col">
-                                            {components.map((item) => (
-                                                <Link
-                                                    key={item.title}
-                                                    href={item.href}
-                                                    className="p-3 pl-6 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900 text-sm"
-                                                >
-                                                    {item.title}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
 
-                                    <Link href="/create-blog" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
+                                    <Link href="/blogs" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
                                         Blogs
                                     </Link>
 
                                     <Link href="/create-blog" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
                                         Create
-                                    </Link>
-
-                                    <Link href="/about" className="w-full p-3 hover:bg-zinc-100 dark:hover:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-900">
-                                        About
                                     </Link>
 
                                     <div className="p-3 border-b border-zinc-200 dark:border-zinc-900">

@@ -3,12 +3,14 @@ import React, { FormEvent, useCallback, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Loader2, User } from "lucide-react";
+import { Textarea } from "./ui/textarea";
 
 export interface UserDetailsUpdate {
   userName: string;
   email: string;
   profileImage: string;
   fullName: string;
+  bio:string
 }
 
 interface FormErrors {
@@ -16,6 +18,7 @@ interface FormErrors {
   email?: string;
   fullName?: string;
   profileImage?: string;
+  bio?:string
 }
 
 export default function UpdateUserForm({
@@ -26,7 +29,7 @@ export default function UpdateUserForm({
   onUserDetailsSubmit: (updatedUserData: UserDetailsUpdate) => Promise<void> | void;
 }): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<FormErrors | null>(null);
 
   const validateForm = (data: UserDetailsUpdate): boolean => {
     const newErrors: FormErrors = {};
@@ -48,6 +51,9 @@ export default function UpdateUserForm({
     if (!data.fullName.trim()) {
       newErrors.fullName = "Full name is required";
     }
+    if (!data.bio) {
+      newErrors.bio = "Bio Is Required";
+    }
 
     if (data.profileImage && !/^https?:\/\/.+\..+/.test(data.profileImage)) {
       newErrors.profileImage = "Please enter a valid URL";
@@ -67,7 +73,8 @@ export default function UpdateUserForm({
         userName: formData.get('userName') as string,
         email: formData.get('email') as string,
         fullName: formData.get('fullName') as string,
-        profileImage: formData.get('profileImage') as string
+        profileImage: formData.get('profileImage') as string,
+        bio:formData.get("bio") as string
       };
 
       if (validateForm(updatedUserData)) {
@@ -105,7 +112,7 @@ export default function UpdateUserForm({
             className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
-          {errors.email && (
+          {errors?.email && (
             <p className="text-red-600 text-sm mt-1">{errors.email}</p>
           )}
         </div>
@@ -123,7 +130,7 @@ export default function UpdateUserForm({
             className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
-          {errors.userName && (
+          {errors?.userName && (
             <p className="text-red-600 text-sm mt-1">{errors.userName}</p>
           )}
         </div>
@@ -141,7 +148,7 @@ export default function UpdateUserForm({
             className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
             required
           />
-          {errors.fullName && (
+          {errors?.fullName && (
             <p className="text-red-600 text-sm mt-1">{errors.fullName}</p>
           )}
         </div>
@@ -158,8 +165,23 @@ export default function UpdateUserForm({
             placeholder="https://example.com/profile.jpg"
             className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
           />
-          {errors.profileImage && (
+          {errors?.profileImage && (
             <p className="text-red-600 text-sm mt-1">{errors.profileImage}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="profileImage" className="text-zinc-700 dark:text-zinc-300 block mb-1">
+            Profile Image URL
+          </Label>
+          <Textarea
+            id="bio"
+            name="bio"
+            defaultValue={userDetails.bio}
+            placeholder="https://example.com/profile.jpg"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
+          />
+          {errors?.bio && (
+            <p className="text-red-600 text-sm mt-1">{errors.bio}</p>
           )}
         </div>
 

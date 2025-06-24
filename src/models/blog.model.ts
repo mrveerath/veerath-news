@@ -1,4 +1,5 @@
 import { Schema, model, Types, models } from "mongoose";
+import { Comment } from "./comment.model";
 
 // TypeScript interface for the Blog
 export interface I_Blog {
@@ -72,10 +73,6 @@ const blogSchema = new Schema<I_Blog>(
         tags: {
             type: [String],
             default: [],
-            validate: {
-                validator: (tags: string[]) => tags.every(tag => /^[a-zA-Z0-9-]{1,30}$/.test(tag)),
-                message: "Tags must be alphanumeric or hyphens, 1–30 characters each",
-            },
         },
         isPublished: {
             type: Boolean,

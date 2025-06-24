@@ -11,11 +11,10 @@ import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../ac
 import UpdateUserForm from "@/components/UpdateUserForm";
 import ChangePasswordForm from "@/components/ChangePassword";
 import { signOut } from "next-auth/react";
-import axios from "axios";
 import { getUserDetails, updateUserDetails, updateUserPassword, UserResponse } from "../actions/userAction";
+import { getBlogs, GetBlogsResponse } from "../actions/blogsAction";
+import BlogCard from "../blogs/component/BlogCard";
 
-// Optional: Set Axios base URL
-axios.defaults.baseURL = "/api";
 
 export default function ProfilePage(): React.ReactElement {
   const { data } = useSession();
@@ -26,6 +25,19 @@ export default function ProfilePage(): React.ReactElement {
   const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const userId = data?.user.id || "";
+  const [myBlogs,setMyBlogs] = useState<GetBlogsResponse[] | []>([])
+
+  const getUserBlogs = useCallback(async () => {
+     if (!userId) return;
+
+    const { message, success, data, error } = await getBlogs(userId)
+    console.log(error)
+      if (!success) {
+        toast.error(message || "Failed to load user details");
+        return;
+      }
+      setMyBlogs(data as GetBlogsResponse[])
+  }, [userId])
 
   // Fetch user data
   const getUser = useCallback(async () => {
@@ -54,6 +66,7 @@ export default function ProfilePage(): React.ReactElement {
     email: string;
     fullName: string;
     profileImage?: string;
+    bio: string
   }) => {
     try {
       const { success, data, message, error } = await updateUserDetails(userId, details);
@@ -159,8 +172,9 @@ export default function ProfilePage(): React.ReactElement {
     if (userId) {
       getImages();
       getUser();
+      getUserBlogs()
     }
-  }, [userId, getImages, getUser]);
+  }, [userId, getImages, getUser, getUserBlogs]);
 
   if (isLoading) {
     return (
@@ -198,11 +212,10 @@ export default function ProfilePage(): React.ReactElement {
         <div className="flex-1 flex flex-col gap-2">
           <Button
             variant="ghost"
-            className={`justify-start gap-3 rounded-none ${
-              activeTab === 'blogs' 
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600' 
+            className={`justify-start gap-3 rounded-none ${activeTab === 'blogs'
+                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
+              }`}
             onClick={() => setActiveTab('blogs')}
           >
             <BookText className="h-5 w-5" />
@@ -210,11 +223,10 @@ export default function ProfilePage(): React.ReactElement {
           </Button>
           <Button
             variant="ghost"
-            className={`justify-start gap-3 rounded-none ${
-              activeTab === 'assets' 
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600' 
+            className={`justify-start gap-3 rounded-none ${activeTab === 'assets'
+                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
+              }`}
             onClick={() => setActiveTab('assets')}
           >
             <FileImage className="h-5 w-5" />
@@ -222,11 +234,10 @@ export default function ProfilePage(): React.ReactElement {
           </Button>
           <Button
             variant="ghost"
-            className={`justify-start gap-3 rounded-none ${
-              activeTab === 'userSetting' 
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600' 
+            className={`justify-start gap-3 rounded-none ${activeTab === 'userSetting'
+                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
+              }`}
             onClick={() => setActiveTab("userSetting")}
           >
             <Settings className="h-5 w-5" />
@@ -322,12 +333,29 @@ export default function ProfilePage(): React.ReactElement {
 
         {activeTab === 'blogs' && (
           <div className="border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-none p-8 flex flex-col items-center justify-center min-h-[400px]">
-            <BookText className="h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4" />
-            <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">No blog posts yet</h3>
-            <p className="text-zinc-500 dark:text-zinc-400 mb-4">Create your first blog post to get started</p>
-            <Button className="bg-red-600 text-white hover:bg-red-700 rounded-none">
-              Create Blog Post
-            </Button>
+            {
+              (!myBlogs || myBlogs.length === 0) && (
+                <>
+                  <BookText className="h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4" />
+                  <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">No blog posts yet</h3>
+                  <p className="text-zinc-500 dark:text-zinc-400 mb-4">Create your first blog post to get started</p>
+                  <Button className="bg-red-600 text-white hover:bg-red-700 rounded-none">
+                    Create Blog Post
+                  </Button>
+                </>
+              )
+            }
+            {
+              myBlogs && (
+                <div>
+                  {
+                    myBlogs.map((blog) => (
+                      <BlogCard details={blog} key={blog.id}/>
+                    ))
+                  }
+                </div>
+              )
+            }
           </div>
         )}
 
@@ -338,11 +366,12 @@ export default function ProfilePage(): React.ReactElement {
                 userName: userDetails?.userName || "",
                 email: userDetails?.email || "",
                 fullName: userDetails?.fullName || "",
-                profileImage: userDetails?.profileImage || ""
+                profileImage: userDetails?.profileImage || "",
+                bio: userDetails?.bio || ""
               }}
               onUserDetailsSubmit={handleUserDetailsSubmit}
             />
-            
+
             <ChangePasswordForm
               handleChangePassword={handlePasswordChange}
             />

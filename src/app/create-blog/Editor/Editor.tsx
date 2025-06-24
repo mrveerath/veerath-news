@@ -69,9 +69,9 @@ lowlight.register('markdown', markdown);
 lowlight.register('yaml', yaml);
 lowlight.register('xml', xml);
 
-const RichTextEditor = ({ value, onChange }:{
-  value:string,
-  onChange:(value:string) => void
+const RichTextEditor = ({ value, onChange }: {
+  value: string,
+  onChange: (value: string) => void
 }) => {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -92,27 +92,27 @@ const RichTextEditor = ({ value, onChange }:{
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-500 hover:underline',
+          class: 'text-zinc-800 dark:text-zinc-200 hover:underline',
         },
       }),
       Image.configure({
         inline: true,
         allowBase64: true,
         HTMLAttributes: {
-          class: 'rounded-lg my-2',
+          class: 'rounded-none my-2',
         },
       }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
-          class: 'border-collapse border border-zinc-300',
+          class: 'border-collapse border border-zinc-300 dark:border-zinc-600',
         },
       }),
       TableRow,
       TableHeader,
       TableCell.configure({
         HTMLAttributes: {
-          class: 'border border-zinc-300 p-2',
+          class: 'border border-zinc-300 dark:border-zinc-600 p-2',
         },
       }),
       TextAlign.configure({
@@ -121,17 +121,23 @@ const RichTextEditor = ({ value, onChange }:{
       TextStyle,
       Color,
       Highlight.configure({
-        multicolor: true,
+        multicolor: false,
+        HTMLAttributes: {
+          class: 'bg-zinc-200 dark:bg-zinc-600',
+        },
       }),
       CodeBlockLowlight.configure({
         lowlight,
         defaultLanguage: 'javascript',
+        HTMLAttributes: {
+          class: 'bg-zinc-100 dark:bg-zinc-700 rounded-none p-4',
+        },
       }),
     ],
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert max-w-none p-4 focus:outline-none min-h-[300px] bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-b-lg',
+        class: 'prose dark:prose-invert max-w-none p-4 focus:outline-none min-h-[300px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-none-b-lg',
       },
     },
     onUpdate: ({ editor }) => {
@@ -140,7 +146,7 @@ const RichTextEditor = ({ value, onChange }:{
   });
 
   const onDrop = useCallback(
-    async (acceptedFiles:File[]) => {
+    async (acceptedFiles: File[]) => {
       if (!acceptedFiles.length || !editor) return;
 
       const file = acceptedFiles[0];
@@ -186,70 +192,71 @@ const RichTextEditor = ({ value, onChange }:{
   }, [value, editor]);
 
   if (!editor) {
-    return <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">Loading editor...</div>;
+    return <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-none border border-zinc-200 dark:border-zinc-700">Loading editor...</div>;
   }
 
   return (
     <div className="max-w-4xl mx-auto my-8">
-      <div className="flex flex-wrap gap-2 mb-2 p-2 bg-zinc-100 dark:bg-zinc-700 rounded-t-lg border border-zinc-200 dark:border-zinc-600">
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-1 mb-1 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-none-t-lg border border-zinc-200 dark:border-zinc-700">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('bold') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('bold') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Bold"
         >
-          <FaBold />
+          <FaBold className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           disabled={!editor.can().chain().focus().toggleItalic().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('italic') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('italic') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Italic"
         >
-          <FaItalic />
+          <FaItalic className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('underline') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('underline') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Underline"
         >
-          <FaUnderline />
+          <FaUnderline className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
           disabled={!editor.can().chain().focus().toggleStrike().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('strike') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('strike') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Strikethrough"
         >
-          <FaStrikethrough />
+          <FaStrikethrough className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('highlight') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('highlight') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Highlight"
         >
-          <MdHighlight />
+          <MdHighlight className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('heading', { level: 1 }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('heading', { level: 1 }) ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
           }`}
           title="Heading 1"
         >
@@ -258,8 +265,8 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('heading', { level: 2 }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('heading', { level: 2 }) ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
           }`}
           title="Heading 2"
         >
@@ -268,8 +275,8 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('heading', { level: 3 }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('heading', { level: 3 }) ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
           }`}
           title="Heading 3"
         >
@@ -278,8 +285,8 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('heading', { level: 4 }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none font-bold hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('heading', { level: 4 }) ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
           }`}
           title="Heading 4"
         >
@@ -288,109 +295,109 @@ const RichTextEditor = ({ value, onChange }:{
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('bulletList') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('bulletList') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Bullet List"
         >
-          <FaListUl />
+          <FaListUl className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('orderedList') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('orderedList') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Ordered List"
         >
-          <FaListOl />
+          <FaListOl className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive({ textAlign: 'left' }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive({ textAlign: 'left' }) ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Align Left"
         >
-          <FaAlignLeft />
+          <FaAlignLeft className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive({ textAlign: 'center' }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive({ textAlign: 'center' }) ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Align Center"
         >
-          <FaAlignCenter />
+          <FaAlignCenter className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive({ textAlign: 'right' }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive({ textAlign: 'right' }) ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Align Right"
         >
-          <FaAlignRight />
+          <FaAlignRight className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive({ textAlign: 'justify' }) ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive({ textAlign: 'justify' }) ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Justify"
         >
-          <FaAlignJustify />
+          <FaAlignJustify className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCode().run()}
           disabled={!editor.can().chain().focus().toggleCode().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('code') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('code') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Inline Code"
         >
-          <FaCode />
+          <FaCode className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`p-2 rounded font-bold hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('codeBlock') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('codeBlock') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Code Block"
         >
-          {'</>'}
+          <span className="text-zinc-800 dark:text-zinc-200">{'</>'}</span>
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('blockquote') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('blockquote') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Blockquote"
         >
-          <FaQuoteLeft />
+          <FaQuoteLeft className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+          className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700"
           title="Horizontal Rule"
         >
-          <FaMinus />
+          <FaMinus className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+          className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700"
           title="Insert Table"
         >
-          <FaTable />
+          <FaTable className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
@@ -402,16 +409,16 @@ const RichTextEditor = ({ value, onChange }:{
               setLinkUrl(editor.getAttributes('link').href || '');
             }
           }}
-          className={`p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-            editor.isActive('link') ? 'bg-red-600 text-white' : ''
+          className={`p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+            editor.isActive('link') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
           }`}
           title="Link"
         >
-          <FaLink />
+          <FaLink className="text-zinc-800 dark:text-zinc-200" />
         </button>
-        <div {...getRootProps()} className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer" title="Upload Image">
+        <div {...getRootProps()} className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 cursor-pointer" title="Upload Image">
           <input {...getInputProps()} />
-          <FaImage />
+          <FaImage className="text-zinc-800 dark:text-zinc-200" />
         </div>
         <button
           type="button"
@@ -421,7 +428,7 @@ const RichTextEditor = ({ value, onChange }:{
               editor.chain().focus().setImage({ src: url }).run();
             }
           }}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+          className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200"
           title="Insert Image"
         >
           URL Image
@@ -430,77 +437,80 @@ const RichTextEditor = ({ value, onChange }:{
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
+          className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
           title="Undo"
         >
-          <FaUndo />
+          <FaUndo className="text-zinc-800 dark:text-zinc-200" />
         </button>
         <button
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="p-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
+          className="p-2 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
           title="Redo"
         >
-          <FaRedo />
+          <FaRedo className="text-zinc-800 dark:text-zinc-200" />
         </button>
       </div>
 
+      {/* Bubble Menu */}
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-600">
+          <div className="flex gap-1 p-1 bg-zinc-100 dark:bg-zinc-800 rounded-none shadow-lg border border-zinc-200 dark:border-zinc-700">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-                editor.isActive('bold') ? 'bg-red-600 text-white' : ''
+              className={`p-1 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+                editor.isActive('bold') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
               }`}
             >
-              Bold
+              <span className="text-zinc-800 dark:text-zinc-200">Bold</span>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-                editor.isActive('italic') ? 'bg-red-600 text-white' : ''
+              className={`p-1 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+                editor.isActive('italic') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
               }`}
             >
-              Italic
+              <span className="text-zinc-800 dark:text-zinc-200">Italic</span>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleLink({ href: linkUrl }).run()}
-              className={`p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600 ${
-                editor.isActive('link') ? 'bg-red-600 text-white' : ''
+              className={`p-1 rounded-none hover:bg-zinc-200 dark:hover:bg-zinc-700 ${
+                editor.isActive('link') ? 'bg-zinc-300 dark:bg-zinc-600' : ''
               }`}
             >
-              Link
+              <span className="text-zinc-800 dark:text-zinc-200">Link</span>
             </button>
           </div>
         </BubbleMenu>
       )}
 
+      {/* Editor Content */}
       <EditorContent className="raw-html" style={{ all: 'revert' }} editor={editor} />
 
+      {/* Link Modal */}
       {isLinkModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg">
-            <h3 className="text-lg font-medium mb-2">Add Link</h3>
+        <div className="fixed inset-0 bg-zinc-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-zinc-50 dark:bg-zinc-800 p-4 rounded-none shadow-lg border border-zinc-200 dark:border-zinc-700">
+            <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-200">Add Link</h3>
             <input
               type="text"
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded mb-2"
+              className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-none mb-2 bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200"
               autoFocus
             />
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsLinkModalOpen(false)}
-                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-600 rounded hover:bg-zinc-300 dark:hover:bg-zinc-500"
+                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-none hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200"
               >
                 Cancel
               </button>
               <button
                 onClick={addLink}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2 bg-zinc-700 dark:bg-zinc-600 text-zinc-100 rounded-none hover:bg-zinc-800 dark:hover:bg-zinc-700"
               >
                 Add Link
               </button>
@@ -509,19 +519,20 @@ const RichTextEditor = ({ value, onChange }:{
         </div>
       )}
 
-      <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-        <h3 className="text-lg font-medium mb-2">Insert Image by URL</h3>
+      {/* Image URL Input */}
+      <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-none border border-zinc-200 dark:border-zinc-700">
+        <h3 className="text-lg font-medium mb-2 text-zinc-800 dark:text-zinc-200">Insert Image by URL</h3>
         <div className="flex gap-2">
           <input
             type="text"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="https://example.com/image.jpg"
-            className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600 rounded"
+            className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600 rounded-none bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200"
           />
           <button
             onClick={addImage}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="px-4 py-2 bg-red-600 text-zinc-100 rounded-none hover:bg-zinc-800 dark:hover:bg-zinc-700"
           >
             Insert
           </button>

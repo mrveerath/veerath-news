@@ -122,18 +122,6 @@ export default function RegistrationPage():React.ReactElement {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="avatarUrl" className="text-zinc-700 dark:text-zinc-300">
-                            Avatar URL (Optional)
-                        </Label>
-                        <Input
-                            type="url"
-                            id="avatarUrl"
-                            name="avatarUrl"
-                            placeholder="https://example.com/avatar.jpg"
-                            className="border-zinc-300 dark:border-zinc-700 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-none "
-                        />
-                    </div>
 
                     <Button
                         type="submit"

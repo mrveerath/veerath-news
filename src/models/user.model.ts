@@ -9,8 +9,7 @@ export interface IUser extends Document {
   password: string;
   profileImage?: string;
   fullName: string;
-  likedPosts: Types.ObjectId[];
-  commentedPost: Types.ObjectId[];
+  bio: string;
   savedPost: Types.ObjectId[];
   interests: string[];
   isDeleted?: boolean;
@@ -54,20 +53,12 @@ const userSchema = new Schema<IUser>(
       minlength: [2, 'Full name must be at least 2 characters'],
       maxlength: [50, 'Full name must be 50 characters or less'],
     },
-    likedPosts: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Blog',
-        default: [],
-      },
-    ],
-    commentedPost: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Blog',
-        default: [],
-      },
-    ],
+    bio: {
+      type: String,
+      trim: true,
+      minlength: [82, 'Full name must be at least 2 characters'],
+      maxlength: [500, 'Full name must be 50 characters or less'],
+    },
     savedPost: [
       {
         type: Schema.Types.ObjectId,
@@ -118,7 +109,7 @@ userSchema.pre<IUser>('save', async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (err) {
-    next(err as CallbackError );
+    next(err as CallbackError);
   }
 });
 
@@ -133,6 +124,6 @@ userSchema.methods.validatePassword = async function (
   }
 };
 
-const User =models.User || model<IUser>('User', userSchema);
+const User = models.User || model<IUser>('User', userSchema);
 
 export default User;

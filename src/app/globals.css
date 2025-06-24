@@ -222,3 +222,22 @@ body {
 .raw-html img{
   height: 300px;
 }
+.article * {
+  all: revert;
+  font-size: initial;
+  line-height: normal;
+}
+.article h1,
+.article h2,
+.article h3,
+.article p,
+.article ul,
+.article ol,
+.article blockquote,
+.article pre,
+.article code {
+  all: revert;
+}
+.article img{
+  height: 300px;
+}

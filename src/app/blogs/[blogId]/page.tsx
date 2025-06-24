@@ -1,76 +1,218 @@
 "use client"
 import { getBlogById } from "@/app/actions/blogsAction"
+import { getAllComments, addComments, toggleCommentLike, deleteComment } from "@/app/actions/likesCommentsAction"
 import { useSession } from "next-auth/react"
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import Image from "next/image"
-// import { format } from "date-fns"
-import { FiHeart, FiMessageSquare, FiCalendar, FiUser } from "react-icons/fi"
+import { format } from "date-fns"
+import { FiHeart, FiMessageSquare, FiCalendar, FiClock, FiTag, FiThumbsUp, FiTrash2 } from "react-icons/fi"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import Link from "next/link"
 
-interface BlogData {
-  _id: string
-  title: string
-  slug: string
-  excerpt: string
-  content: string
-  thumbnailUrl: string
-  metaTitle: string
-  metaDescription: string
-  tags: string[]
-  isPublished: boolean
-  publishedAt: string
-  likedBy: string[]
-  comments: any[]
-  isDeleted: boolean
+interface BlogDocument {
+  _id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  thumbnailUrl: string;
+  tags: string[];
+  slug: string;
+  metaTitle: string;
+  metaDescription: string;
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   createdBy: {
-    _id: string
-    profileImage: string
-    fullName: string
-  }
-  createdAt: string
-  updatedAt: string
-  __v: number
+    fullName: string;
+    profileImage: string;
+    _id: string;
+  };
+  likedBy: Array<{
+    fullName: string;
+    profileImage: string;
+    _id: string;
+  }>;
+  likesCount: number;
 }
 
-export default function Page({ params }: { params: { blogId: string } }): React.ReactElement {
-  const { blogId } = params
-  const { data } = useSession()
-  const userId = data?.user.id || ""
-  const [blogData, setBlogData] = useState<BlogData | null>(null)
+interface BlogComments {
+  commentId: string;
+  createdBy: {
+    fullName: string;
+    id: string;
+    profileImage: string;
+  };
+  content: string;
+  likes: number;
+}
+
+interface CommentData {
+  comment: string;
+  commentedBy: string;
+  blogId: string;
+}
+
+export default function BlogPage({ params }: { params: { blogId: string } }) {
+  const { blogId } = React.use(params)
+  const { data: session } = useSession()
+  const userId = session?.user.id || ""
+
+  const [blogData, setBlogData] = useState<BlogDocument | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [isLiking, setIsLiking] = useState(false)
+  const [comment, setComment] = useState("")
+  const [comments, setComments] = useState<BlogComments[] | null>(null)
+  const [isCommenting, setIsCommenting] = useState(false)
 
-  const getBlogDetails = useCallback(async () => {
+  const fetchBlogDetails = useCallback(async () => {
     try {
       setLoading(true)
-      const { message, success, data, error } = await getBlogById(blogId, userId)
-      console.log(message)
-      console.log(data)
-      console.log(success)
-      console.log(error)
-      if ( data) {
-        setBlogData(data)
-      } else {
-        setError( "Failed to load blog post")
+      setError("")
+      const { message, success, data, error } = await getBlogById(blogId)
+
+      if (!success || error) {
+        throw new Error(message as string || "Failed to fetch blog post")
       }
+
+      setBlogData(data as BlogDocument)
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
+      toast.error("Failed to load blog post")
     } finally {
       setLoading(false)
     }
-  }, [blogId, userId])
+  }, [blogId])
 
-  useEffect(() => {console.log(blogData)},[blogData])
+  const fetchBlogComments = useCallback(async () => {
+    try {
+      const { success, data, message, error } = await getAllComments(blogId)
+      if (!success || error) {
+        throw new Error(message || "Failed to fetch comments")
+      }
+      setComments(data as BlogComments[])
+    } catch (err) {
+      toast.error("Failed to load comments")
+    }
+  }, [blogId])
 
   useEffect(() => {
-    getBlogDetails()
-  }, [getBlogDetails])
+    fetchBlogDetails()
+    fetchBlogComments()
+  }, [fetchBlogDetails, fetchBlogComments])
+
+  const handleLike = async () => {
+    if (!blogData || isLiking) return
+
+    try {
+      setIsLiking(true)
+      // Implement your like logic here
+      // await likeBlog(blogId, userId)
+      toast.success("Blog liked successfully!")
+      await fetchBlogDetails()
+    } catch (err) {
+      toast.error("Failed to like blog")
+    } finally {
+      setIsLiking(false)
+    }
+  }
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!comment.trim() || isCommenting) return
+
+    try {
+      setIsCommenting(true)
+      const commentData: CommentData = {
+        comment: comment.trim(),
+        commentedBy: userId,
+        blogId,
+      }
+      const { success, message, error } = await addComments(commentData)
+      if (!success || error) {
+        throw new Error(message || "Failed to post comment")
+      }
+      toast.success("Comment posted successfully!")
+      setComment("")
+      await fetchBlogComments()
+    } catch (err) {
+      toast.error("Failed to post comment")
+    } finally {
+      setIsCommenting(false)
+    }
+  }
+
+  const handleToggleCommentLike = async (commentId: string) => {
+    if (!userId) {
+      toast.error("Please log in to like comments")
+      return
+    }
+    try {
+      const { success, message, data, error } = await toggleCommentLike(commentId, userId)
+      if (!success || error) {
+        throw new Error(message || "Failed to toggle comment like")
+      }
+      toast.success(message)
+      await fetchBlogComments()
+    } catch (err) {
+      toast.error("Failed to toggle comment like")
+    }
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!userId) {
+      toast.error("Please log in to delete comments")
+      return
+    }
+    try {
+      const { success, message, error } = await deleteComment(commentId, userId)
+      if (!success || error) {
+        throw new Error(message || "Failed to delete comment")
+      }
+      toast.success("Comment deleted successfully")
+      await fetchBlogComments()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete comment")
+    }
+  }
+
+  const calculateReadTime = (content: string) => {
+    const wordsPerMinute = 200
+    const wordCount = content.split(/\s+/).length
+    return Math.ceil(wordCount / wordsPerMinute)
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 bg-red-600 rounded-full mb-4"></div>
-          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-32"></div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="relative h-96 rounded-xl overflow-hidden bg-muted mb-8">
+            <Skeleton className="absolute inset-0 w-full h-full" />
+          </div>
+          <div className="max-w-3xl mx-auto">
+            <div className="flex gap-2 mb-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6 w-16 rounded-full" />
+              ))}
+            </div>
+            <Skeleton className="h-10 w-full mb-6" />
+            <Skeleton className="h-6 w-3/4 mb-8" />
+            <div className="flex items-center gap-4 mb-12">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -78,16 +220,16 @@ export default function Page({ params }: { params: { blogId: string } }): React.
 
   if (error) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="text-center p-6 max-w-md mx-auto bg-white dark:bg-zinc-900 rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold text-red-600 mb-2">Error Loading Blog</h2>
-          <p className="text-zinc-600 dark:text-zinc-300 mb-4">{error}</p>
-          <button
-            onClick={getBlogDetails}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center p-6 max-w-md mx-auto bg-card rounded-lg shadow-lg border">
+          <h2 className="text-xl font-bold text-destructive mb-2">Error Loading Blog</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button
+            onClick={fetchBlogDetails}
+            variant="destructive"
           >
             Try Again
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -95,157 +237,199 @@ export default function Page({ params }: { params: { blogId: string } }): React.
 
   if (!blogData) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-zinc-800 dark:text-zinc-200">Blog not found</h2>
-          <p className="text-zinc-600 dark:text-zinc-400">The requested blog post does not exist.</p>
+          <h2 className="text-xl font-bold">Blog not found</h2>
+          <p className="text-muted-foreground">The requested blog post does not exist.</p>
         </div>
       </div>
     )
   }
 
-//   const publishedDate = format(new Date(blogData.publishedAt), "MMMM dd, yyyy")
+  const readTime = calculateReadTime(blogData.content)
+  const publishedDate = format(new Date(blogData.createdAt), "MMMM dd, yyyy")
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* Hero Section */}
-      <div className="relative bg-zinc-900 text-zinc-50 overflow-hidden">
-        {blogData.thumbnailUrl && (
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={blogData.thumbnailUrl}
-              alt={blogData.title}
-              fill
-              className="object-cover opacity-30"
-              priority
-            />
-          </div>
-        )}
+    <div className="min-h-screen bg-background">
+      <div className="relative bg-gradient-to-r from-primary/10 to-secondary/10 overflow-hidden">
         <div className="container mx-auto px-4 py-24 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center space-x-2 mb-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex flex-wrap gap-2 mb-6">
               {blogData.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 bg-red-600 text-xs font-semibold text-white uppercase tracking-wider rounded-full"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary"
                 >
+                  <FiTag className="mr-1" size={12} />
                   {tag}
                 </span>
               ))}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">{blogData.title}</h1>
-            <p className="text-xl text-zinc-300 mb-8">{blogData.excerpt}</p>
-            <div className="flex items-center justify-center space-x-6 text-zinc-300">
-              <div className="flex items-center space-x-2">
-                <FiUser className="text-red-500" />
-                <span>{blogData.createdBy.fullName}</span>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+              {blogData.title}
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              {blogData.excerpt}
+            </p>
+            <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="relative h-10 w-10 rounded-full overflow-hidden border">
+                  <Image
+                    src={blogData.createdBy.profileImage}
+                    alt={blogData.createdBy.fullName}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <Link href={`/profile/${blogData.createdBy._id}`}>
+                  <p className="text-zinc-900 dark:text-white leading-none">{blogData.createdBy.fullName}</p>
+                </Link>
               </div>
-              <div className="flex items-center space-x-2">
-                <FiCalendar className="text-red-500" />
-                {/* <span>{publishedDate}</span> */}
+              <div className="flex items-center gap-2">
+                <FiCalendar className="text-primary" />
+                <span>{publishedDate}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FiClock className="text-primary" />
+                <span>{readTime} min read</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Content Section */}
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="prose dark:prose-invert prose-lg max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: blogData.content }} />
+        <div className="max-w-3xl mx-auto">
+          {blogData.thumbnailUrl && (
+            <div className="relative aspect-video rounded-xl overflow-hidden mb-12 border">
+              <Image
+                src={blogData.thumbnailUrl}
+                alt={blogData.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+          <article
+            className="prose dark:prose-invert prose-lg max-w-none article"
+            dangerouslySetInnerHTML={{ __html: blogData.content }}
+          ></article>
+          <div className="mt-16 pt-8 border-t">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={handleLike}
+                disabled={isLiking}
+                className="flex items-center gap-2"
+              >
+                <FiHeart
+                  className={`text-lg ${blogData.likedBy.some(like => like._id.toString() === userId) ? "text-red-500 fill-red-500" : ""}`}
+                />
+                <span>
+                  {blogData.likedBy.length} {blogData.likedBy.length === 1 ? "Like" : "Likes"}
+                </span>
+              </Button>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <FiMessageSquare />
+                <span>{comments?.length || 0} {comments?.length === 1 ? "Comment" : "Comments"}</span>
+              </div>
+            </div>
           </div>
-
-          {/* Author Bio */}
-          <div className="mt-16 border-t border-zinc-200 dark:border-zinc-800 pt-12">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
-              <div className="flex-shrink-0">
+          <div className="mt-16 p-6 bg-muted/50 rounded-xl">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              <div className="relative h-20 w-20 rounded-full overflow-hidden border">
                 <Image
                   src={blogData.createdBy.profileImage}
                   alt={blogData.createdBy.fullName}
-                  width={80}
-                  height={80}
-                  className="rounded-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               </div>
               <div className="text-center md:text-left">
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                <h3 className="text-xl font-bold">
                   Written by {blogData.createdBy.fullName}
                 </h3>
-                <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                  {/* Published on {publishedDate} */}
+                <p className="mt-2 text-muted-foreground">
+                  Published on {publishedDate}
+                </p>
+                <p className="mt-4">
+                  {/* Add author bio here if available */}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Engagement Section */}
-          <div className="mt-12 flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-8">
-            <button className="flex items-center space-x-2 text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-500 transition-colors">
-              <FiHeart className="text-lg" />
-              <span>{blogData.likedBy.length} Likes</span>
-            </button>
-            <button className="flex items-center space-x-2 text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-500 transition-colors">
-              <FiMessageSquare className="text-lg" />
-              <span>{blogData.comments.length} Comments</span>
-            </button>
-          </div>
-
-          {/* Comments Section */}
-          <div className="mt-12">
-            <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
-              Comments ({blogData.comments.length})
+          <div className="mt-16">
+            <h3 className="text-2xl font-bold mb-8">
+              Comments ({comments?.length || 0})
             </h3>
-            {blogData.comments.length > 0 ? (
-              <div className="space-y-6">
-                {blogData.comments.map((comment) => (
-                  <div key={comment._id} className="bg-white dark:bg-zinc-900 p-6 rounded-lg shadow">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <Image
-                        src={comment.user.profileImage}
-                        alt={comment.user.name}
-                        width={40}
-                        height={40}
-                        className="rounded-full"
-                      />
-                      <div>
-                        <h4 className="font-semibold">{comment.user.name}</h4>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          {/* {format(new Date(comment.createdAt), "MMM dd, yyyy")} */}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-zinc-700 dark:text-zinc-300">{comment.text}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-zinc-500 dark:text-zinc-400 italic">
-                No comments yet. Be the first to comment!
-              </p>
-            )}
-          </div>
-
-          {/* Comment Form */}
-          <div className="mt-12 bg-white dark:bg-zinc-900 p-6 rounded-lg shadow">
-            <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-              Leave a comment
-            </h3>
-            <form className="space-y-4">
+            <form onSubmit={handleCommentSubmit} className="space-y-4 mb-12">
               <div>
                 <textarea
                   rows={4}
-                  className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                  placeholder="Write your comment here..."
-                ></textarea>
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
+                  placeholder="Share your thoughts..."
+                  disabled={isCommenting}
+                />
               </div>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors"
-              >
-                Post Comment
-              </button>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={!comment.trim() || isCommenting} className="bg-red-600">
+                  Post Comment
+                </Button>
+              </div>
             </form>
+            <div className="space-y-8">
+              {comments && comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.commentId} className="border-b pb-8">
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-10 w-10 rounded-full overflow-hidden border">
+                        <Image
+                          src={comment.createdBy.profileImage || "/default-avatar.png"}
+                          alt={comment.createdBy.fullName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">{comment.createdBy.fullName}</h4>
+                          <span className="text-sm text-muted-foreground">
+                            {format(new Date(), "MMM d, yyyy")}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-muted-foreground">{comment.content}</p>
+                        <div className="flex items-center gap-4 mt-4">
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleToggleCommentLike(comment.commentId)}
+                            className="flex items-center gap-2"
+                          >
+                            <FiThumbsUp
+                              className={`text-lg ${comment.likes > 0 ? "text-blue-500" : ""}`}
+                            />
+                            <span>{comment.likes} {comment.likes === 1 ? "Like" : "Likes"}</span>
+                          </Button>
+                          {comment.createdBy.id === userId && (
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleDeleteComment(comment.commentId)}
+                              className="flex items-center gap-2 text-destructive"
+                            >
+                              <FiTrash2 />
+                              <span>Delete</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
