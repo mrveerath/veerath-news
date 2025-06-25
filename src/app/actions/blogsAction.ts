@@ -62,6 +62,7 @@ interface PaginatedBlogsResponse {
     };
 }
 
+
 export async function getBlogs(userId: string): Promise<ApiResponse<GetBlogsResponse[]>> {
     try {
         await dbConnect();
@@ -340,8 +341,6 @@ export async function getPaginatedBlogs(
             .limit(limit)
             .lean()
 
-        console.log(blogs)
-
         const allBlogs: GetBlogsResponse[] = blogs.map((B) => ({
             id: String(B._id),
             title: B.title,
@@ -354,7 +353,6 @@ export async function getPaginatedBlogs(
                 _id: String(B.createdBy._id)
             }
         }));
-        console.log(allBlogs)
 
 
         return {

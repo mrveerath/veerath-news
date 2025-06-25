@@ -27,6 +27,7 @@ export default function Page(): React.ReactElement {
   const { data } = useSession();
   const router = useRouter();
   const userId = data?.user.id;
+  console.log(userId)
   const [blogData, setBlogData] = useState<BlogData>({
     title: '',
     slug: '',
@@ -38,7 +39,7 @@ export default function Page(): React.ReactElement {
     tags: [],
     isPublished: false,
     publishedAt: new Date().toISOString().split('T')[0],
-    userId: userId
+    userId: userId || ""
   });
 
   const [characterCount, setCharacterCount] = useState(0);

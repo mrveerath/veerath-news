@@ -55,6 +55,8 @@ interface BlogComments {
   };
   content: string;
   likes: number;
+  likedBy:string[]
+  createdAt:Date
 }
 
 // Function to fetch liked posts
@@ -101,6 +103,109 @@ export async function getLikedPosts(userId: string): Promise<ApiResponse<LikedPo
       success: false,
       error: true,
       message: "Failed to fetch blogs",
+      data: null,
+    };
+  }
+}
+
+export async function toggleLikeToPost(userId: string, blogId: string): Promise<ApiResponse<string>> {
+  try {
+
+    await dbConnect();
+
+    if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(blogId)) {
+      return {
+        success: false,
+        error: true,
+        data: null,
+        message: "Invalid User ID Or Blog Id format",
+      };
+    }
+    const existingBlog = await Blog.findById(blogId)
+    if (!existingBlog) {
+      return {
+        success: false,
+        error: true,
+        data: null,
+        message: "Blogs Doesn't Exist",
+      };
+    }
+    if (existingBlog.likedBy.includes(userId)) {
+      existingBlog.likedBy = existingBlog.likedBy.filter((UID: string) => UID !== userId)
+      await existingBlog.save()
+      return {
+        success: true,
+        error: false,
+        message: "Liked Removed Successfully",
+        data: userId,
+      }
+    }
+    else {
+      existingBlog.likedBy.push(userId)
+      await existingBlog.save()
+      return {
+        success: true,
+        error: false,
+        message: "Liked Removed Successfully",
+        data: userId,
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: true,
+      message: "Failed to like the blog",
+      data: null,
+    };
+  }
+}
+export async function toggleSavePost(userId: string, blogId: string): Promise<ApiResponse<string>> {
+  try {
+
+    await dbConnect();
+
+    if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(blogId)) {
+      return {
+        success: false,
+        error: true,
+        data: null,
+        message: "Invalid User ID Or Blog Id format",
+      };
+    }
+    const existingUser = await User.findById(userId)
+    if (!existingUser) {
+      return {
+        success: false,
+        error: true,
+        data: null,
+        message: "User Doesn't Exist",
+      };
+    }
+    if (existingUser.savedPost.includes(blogId)) {
+      existingUser.savedPost = existingUser.savedPost.filter((PID: string) => PID !== blogId)
+      await existingUser.save()
+      return {
+        success: true,
+        error: false,
+        message: "Post Saved Successfully",
+        data: null
+      }
+    }
+    else {
+      existingUser.savedPost.push(blogId)
+      await existingUser.save()
+      return {
+        success: true,
+        error: false,
+        message: "Post Unsaved Successfully",
+        data: null,
+      }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: true,
+      message: "Failed to like the blog",
       data: null,
     };
   }
@@ -158,6 +263,39 @@ export async function addComments(commentData: CommentData): Promise<ApiResponse
   }
 }
 
+export async function checkIsSaved(userId: string, blogId: string): Promise<ApiResponse<boolean>> {
+  try {
+    await dbConnect();
+
+    if (!Types.ObjectId.isValid(blogId) || !Types.ObjectId.isValid(userId)) {
+      return {
+        success: false,
+        error: true,
+        data: false,
+        message: "Invalid Blog ID Or UserId format",
+      };
+    }
+
+    const existingUser = await User.findById(userId);
+    const isSaved = existingUser?.savedPost.includes(blogId) ?? false;
+
+    return {
+      success: true,
+      error: false,
+      data: isSaved,
+      message: "",
+    };
+  } catch (error) {
+    console.error("Error checking if post is saved:", error);
+    return {
+      success: false,
+      error: true,
+      data: false,
+      message: "Failed to check if the post is saved",
+    };
+  }
+}
+
 // Function to fetch all comments for a post
 export async function getAllComments(postId: string): Promise<ApiResponse<BlogComments[]>> {
   try {
@@ -187,6 +325,8 @@ export async function getAllComments(postId: string): Promise<ApiResponse<BlogCo
       },
       content: comment.content,
       likes: comment.likedBy?.length || 0,
+      likedBy:comment.likedBy,
+      createdAt:comment.createdAt
     }));
 
     return {
@@ -317,6 +457,8 @@ export async function toggleCommentLike(commentId: string, userId: string): Prom
       },
       content: comment.content,
       likes,
+      likedBy:comment.likedBy as string[],
+      createdAt:comment.createdAt
     };
 
     return {
