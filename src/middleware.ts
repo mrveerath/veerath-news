@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const pathname = nextUrl.pathname;
   const url = request.nextUrl.clone();
 
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  const secret = process.env.AUTH_SECRET;
 
   // Debug log environment secret
   if (!secret) {
@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
   // Try getting the token
   const token = await getToken({ req: request, secret });
 
+  console.log(token)
 
   // Redirect authenticated users away from auth pages
   const isAuthPage = pathname.startsWith('/auth/sign-in') || pathname.startsWith('/auth/sign-up');
