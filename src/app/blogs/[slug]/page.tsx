@@ -39,25 +39,6 @@ import {
   toggleSavePost,
 } from "@/app/actions/likesCommentsAction";
 
-type User = {
-  id: string;
-  fullName: string;
-  profileImage: string;
-  username?: string;
-};
-
-type Comment = {
-  id: string;
-  content: string;
-  createdAt: string;
-  likes: number;
-  likedBy: string[];
-  author: {
-    id: string;
-    fullName: string;
-    profileImage: string;
-  };
-};
 
 interface BlogPageParams {
   slug: string;

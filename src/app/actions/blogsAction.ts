@@ -5,6 +5,7 @@ import { BlogData } from "../create-blog/page";
 import { dbConnect } from "@/lib/dbConnect";
 import { Types } from "mongoose";
 
+// Define the necessary interfaces
 interface ApiResponse<T> {
     success: boolean;
     error?: boolean;
@@ -12,11 +13,18 @@ interface ApiResponse<T> {
     data?: T;
 }
 
+interface User {
+    _id: string;
+    fullName: string;
+    profileImage: string;
+    profession?: string;
+}
+
 export interface GetBlogsResponse {
     id: string;
     title: string;
     excerpt: string;
-    slug:string;
+    slug: string;
     thumbnailUrl: string;
     tags: string[];
     createdBy: {
@@ -44,7 +52,7 @@ export interface BlogDocument {
     isPublished: boolean;
     createdAt: Date;
     updatedAt: Date;
-    comments:string[]
+    comments: string[];
     createdBy: {
         fullName: string;
         profileImage: string;
@@ -55,46 +63,46 @@ export interface BlogDocument {
     totalComments: number;
 }
 
-interface PaginatedBlogsResponse {
-    allBlogs: GetBlogsResponse[];
-    pagination: {
-        currentPage: number;
-        totalPages: number;
-        totalCount: number;
-        limit: number;
-    };
+interface Pagination {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    limit: number;
 }
 
-// ✅ Function 1: Fetch blogs by a user
+interface PaginatedBlogsResponse {
+    allBlogs: GetBlogsResponse[];
+    pagination: Pagination;
+}
+
+// Function 1: Fetch blogs by a user
 export async function getBlogs(userId: string): Promise<ApiResponse<GetBlogsResponse[]>> {
     try {
         await dbConnect();
 
-        const allblogs = await Blog.find({ createdBy: userId, isDeleted: false })
+        const allBlogs = await Blog.find({ createdBy: userId, isDeleted: false })
             .select("title excerpt thumbnailUrl tags createdBy likedBy comments readedBy createdAt slug")
             .populate({ path: 'createdBy', select: 'fullName profileImage _id profession' })
             .sort({ createdAt: -1 })
             .lean();
 
-            console.log(allblogs)
-
-        const blogs: GetBlogsResponse[] = allblogs.map((B) => ({
-            id: String(B._id),
-            title: B.title,
-            excerpt: B.excerpt,
-            thumbnailUrl: B.thumbnailUrl,
-            tags: B.tags,
+        const blogs: GetBlogsResponse[] = allBlogs.map((blog) => ({
+            id: String(blog._id),
+            title: blog.title,
+            excerpt: blog.excerpt,
+            thumbnailUrl: blog.thumbnailUrl,
+            tags: blog.tags,
+            slug: blog.slug,
             createdBy: {
-                fullName: B.createdBy.fullName,
-                profileImage: B.createdBy.profileImage,
-                _id: String(B.createdBy._id),
-                profession: B.createdBy.profession,
+                fullName: blog.createdBy.fullName,
+                profileImage: blog.createdBy.profileImage,
+                _id: String(blog.createdBy._id),
+                profession: blog.createdBy.profession,
             },
-            createdAt: B.createdAt,
-            totalComments: B.comments?.length || 0,
-            totalLikes: B.likedBy?.length || 0,
-            totalReads: B.readedBy?.length || 0,
-            slug:B.slug
+            createdAt: blog.createdAt,
+            totalComments: blog.comments?.length || 0,
+            totalLikes: blog.likedBy?.length || 0,
+            totalReads: blog.readedBy?.length || 0,
         }));
 
         return { success: true, message: "Blogs fetched successfully", data: blogs };
@@ -104,7 +112,7 @@ export async function getBlogs(userId: string): Promise<ApiResponse<GetBlogsResp
     }
 }
 
-// ✅ Function 2: Create a blog
+// Function 2: Create a blog
 export async function createBlog(blogData: BlogData): Promise<ApiResponse<string>> {
     try {
         await dbConnect();
@@ -142,7 +150,7 @@ export async function createBlog(blogData: BlogData): Promise<ApiResponse<string
     }
 }
 
-// ✅ Function 3: Soft delete blog
+// Function 3: Soft delete blog
 export async function deleteBlog(blogId: string, userId: string): Promise<ApiResponse<null>> {
     try {
         await dbConnect();
@@ -168,29 +176,27 @@ export async function deleteBlog(blogId: string, userId: string): Promise<ApiRes
     }
 }
 
-// ✅ Function 4: Get blog by ID
+// Function 4: Get blog by ID
 export async function getBlogById(blogId: string): Promise<ApiResponse<BlogDocument>> {
     try {
         await dbConnect();
 
-        if(!blogId){
+        if (!blogId) {
             return { success: false, error: true, message: "Please Provide The Slug" };
         }
-        console.log(blogId)
 
         const blog = await Blog.findOne({ slug: blogId, isDeleted: false })
             .populate('createdBy', 'fullName profileImage _id')
             .populate('likedBy', 'fullName profileImage _id')
             .lean<BlogDocument>();
 
-            console.log(blog)
         if (!blog) {
             return { success: false, error: true, message: "Blog not found" };
         }
 
         const response = {
-            _id: String(blog?._id),
-            title: blog?.title,
+            _id: String(blog._id),
+            title: blog.title,
             excerpt: blog.excerpt,
             content: blog.content,
             thumbnailUrl: blog.thumbnailUrl,
@@ -207,9 +213,9 @@ export async function getBlogById(blogId: string): Promise<ApiResponse<BlogDocum
                 _id: String(blog.createdBy._id),
             },
             likedBy: blog.likedBy.map((like) => like.toString()),
-            readedBy: blog.readedBy.map((comment) => comment.toString()),
+            readedBy: blog.readedBy.map((read) => read.toString()),
             totalComments: blog.comments.length || 0,
-            comments:blog.comments
+            comments: blog.comments
         };
 
         return { success: true, message: "Blog fetched successfully", data: response };
@@ -219,7 +225,7 @@ export async function getBlogById(blogId: string): Promise<ApiResponse<BlogDocum
     }
 }
 
-// ✅ Function 5: Paginated blog fetch
+// Function 5: Paginated blog fetch
 export async function getPaginatedBlogs(
     page: number = 1,
     limit: number = 10,
@@ -233,14 +239,14 @@ export async function getPaginatedBlogs(
 
         const skip = (page - 1) * limit;
 
-        const query: any = { isPublished: true, isDeleted: false };
+        const query: { tags?: string, $text?: { $search: string }, isPublished: boolean, isDeleted: boolean } = { isPublished: true, isDeleted: false };
 
         if (filterOptions.tag) query.tags = filterOptions.tag;
         if (filterOptions.searchQuery) query.$text = { $search: filterOptions.searchQuery };
 
         const [blogs, totalCount] = await Promise.all([
             Blog.find(query)
-                .select("title excerpt thumbnailUrl tags slug createdAt likedBy comments createdBy")
+                .select("title excerpt thumbnailUrl tags slug createdAt likedBy comments createdBy readedBy")
                 .populate("createdBy", "fullName profileImage _id profession")
                 .sort({ createdAt: -1 })
                 .skip(skip)
@@ -249,23 +255,23 @@ export async function getPaginatedBlogs(
             Blog.countDocuments(query),
         ]);
 
-        const allBlogs: GetBlogsResponse[] = blogs.map((B) => ({
-            id: String(B._id),
-            title: B.title,
-            excerpt: B.excerpt,
-            thumbnailUrl: B.thumbnailUrl,
-            tags: B.tags,
-            slug:B.slug,
+        const allBlogs: GetBlogsResponse[] = blogs.map((blog) => ({
+            id: String(blog._id),
+            title: blog.title,
+            excerpt: blog.excerpt,
+            thumbnailUrl: blog.thumbnailUrl,
+            tags: blog.tags,
+            slug: blog.slug,
             createdBy: {
-                fullName: B.createdBy.fullName,
-                profileImage: B.createdBy.profileImage,
-                _id: String(B.createdBy._id),
-                profession: B.createdBy.profession,
+                fullName: blog.createdBy.fullName,
+                profileImage: blog.createdBy.profileImage,
+                _id: String(blog.createdBy._id),
+                profession: blog.createdBy.profession,
             },
-            createdAt: B.createdAt,
-            totalLikes: B.likedBy?.length || 0,
-            totalComments: B.comments?.length || 0,
-            totalReads: B.readedBy?.length || 0,
+            createdAt: blog.createdAt,
+            totalLikes: blog.likedBy?.length || 0,
+            totalComments: blog.comments?.length || 0,
+            totalReads: blog.readedBy?.length || 0,
         }));
 
         return {
