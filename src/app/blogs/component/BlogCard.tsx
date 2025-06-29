@@ -20,7 +20,7 @@ export interface GetBlogsResponse {
   };
   totalLikes: number;
   totalComments: number;
-  slug:string
+  slug: string
   totalReads: number;
 }
 
@@ -73,7 +73,9 @@ export default function BlogCard({ details }: { details: GetBlogsResponse }): Re
         {/* Thumbnail */}
         {details.thumbnailUrl && (
           <Link href={`/blogs/${details.slug}`} className="md:w-1/3 w-full h-48 md:h-auto">
-            <img
+            <Image
+              height={100}
+              width={100}
               src={details.thumbnailUrl}
               alt={details.title}
               className="object-cover w-full h-full"

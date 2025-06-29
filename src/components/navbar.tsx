@@ -137,20 +137,6 @@ export function Navbar() {
         </header>
     )
 }
-
-const components: { title: string; href: string; description: string }[] = [
-    {
-        title: "Alert Dialog",
-        href: "/docs/primitives/alert-dialog",
-        description: "A modal dialog that interrupts the user with important content.",
-    },
-    {
-        title: "Hover Card",
-        href: "/docs/primitives/hover-card",
-        description: "For sighted users to preview content available behind a link.",
-    },
-]
-
 const ListItem = React.forwardRef<
     React.ElementRef<"a">,
     React.ComponentPropsWithoutRef<"a"> & { href: string }

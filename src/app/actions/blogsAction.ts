@@ -13,12 +13,6 @@ interface ApiResponse<T> {
     data?: T;
 }
 
-interface User {
-    _id: string;
-    fullName: string;
-    profileImage: string;
-    profession?: string;
-}
 
 export interface GetBlogsResponse {
     id: string;

@@ -61,6 +61,7 @@ const ProfilePage = () => {
 
       if (success && data) {
         setUserDetails(data as UserResponse);
+        console.log(message)
       } else {
         toast.error("Failed to load user details");
       }
