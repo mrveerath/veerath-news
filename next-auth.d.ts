@@ -13,6 +13,8 @@ declare module "next-auth" {
     fullName: string;
     email: string;
     profileImage:string
+    bio:string,
+    profession:string
   }
 }
 
@@ -22,5 +24,7 @@ declare module "next-auth/jwt" {
     userName: string;
     fullName: string;
     email: string;
+    bio:string;
+    profession:string
   }
 }

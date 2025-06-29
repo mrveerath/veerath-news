@@ -5,7 +5,6 @@ import { dbConnect } from "@/lib/dbConnect";
 import { object, string } from "zod";
 import type { User as AuthUser } from "next-auth";
 
-// Custom error class for auth errors with a different name
 class CustomAuthError extends Error {
     constructor(message: string, public type?: string) {
         super(message);
@@ -13,7 +12,6 @@ class CustomAuthError extends Error {
     }
 }
 
-// Enhanced validation schema
 const signInSchema = object({
     email: string({ required_error: "Email is required" })
         .min(1, "Email is required")
@@ -44,36 +42,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 try {
                     await dbConnect();
 
-                    // Validate input
                     const parsedCredentials = await signInSchema.parseAsync(credentials);
+
                     const { email, password } = parsedCredentials;
 
-                    // Find user by email or username
                     const user = await User.findOne({
                         $or: [{ email }, { userName: email }],
                         isDeleted: false,
-                    }).select("+password"); // Include password for validation
+                    }).select("+password");
 
                     if (!user) {
                         throw new CustomAuthError("User Doesn't exist", "CredentialsSignin");
                     }
-                    if(user.isDeleted){
+                    if (user.isDeleted) {
                         throw new CustomAuthError("User Is Deleted", "CredentialsSignin");
                     }
 
-                    // Validate password
                     const isValidPassword = await user.validatePassword(password);
                     if (!isValidPassword) {
                         throw new CustomAuthError("Invalid Password", "CredentialsSignin");
                     }
 
-                    // Return sanitized user object
                     return {
                         id: user._id.toString(),
                         email: user.email,
                         name: user.fullName,
                         userName: user.userName,
-                        image:user.profileImage
+                        image: user.profileImage,
+                        bio: user.bio,
+                        profession: user.profession
 
                     } as AuthUser;
 
@@ -96,13 +93,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     secret: process.env.AUTH_SECRET,
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
+            // Initial login
             if (user) {
                 token.id = user.id;
                 token.email = user.email;
                 token.fullName = user.fullName;
                 token.userName = user.userName;
+                token.profileImage = user.image;
+                token.bio = user.bio;
+                token.profession = user.profession;
             }
+
+            // Session update triggered by useSession().update()
+            if (trigger === "update" && session) {
+                token.fullName = session.fullName ?? token.fullName;
+                token.userName = session.userName ?? token.userName;
+                token.profileImage = session.profileImage ?? token.profileImage;
+                token.bio = session.bio ?? token.bio;
+                token.profession = session.profession ?? token.profession;
+            }
+
             return token;
         },
         async session({ session, token }) {
@@ -111,7 +122,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.userName = token.userName as string;
                 session.user.fullName = token.fullName as string;
                 session.user.email = token.email as string;
-                session.user.profileImage = token.profileImage as string
+                session.user.profileImage = token.profileImage as string;
+                session.user.bio = token.bio as string;
+                session.user.profession = token.profession as string;
             }
             return session;
         },

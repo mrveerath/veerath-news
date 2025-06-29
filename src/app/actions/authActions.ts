@@ -37,6 +37,7 @@ export async function registerUser(formData: FormData): Promise<Response> {
     await newUser.save();
     return { error: "", success: true } as Response
   } catch (error) {
+    console.log(error)
     console.error("Registration error:", error);
     // Handle error (e.g., show an error message to the user)
     return { error: "Failed To Register User", success: false } as Response;

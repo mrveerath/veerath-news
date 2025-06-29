@@ -1,7 +1,6 @@
 // src/models/user.model.ts
 import { Schema, model, models, Types, Document, CallbackError } from 'mongoose';
-import bcrypt from 'bcryptjs'
-
+import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
   userName: string;
@@ -9,10 +8,11 @@ export interface IUser extends Document {
   password: string;
   profileImage?: string;
   fullName: string;
-  bio: string;
+  bio?: string;
   savedPost: Types.ObjectId[];
   interests: string[];
   isDeleted?: boolean;
+  profession: string;
   validatePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -48,16 +48,21 @@ const userSchema = new Schema<IUser>(
     },
     fullName: {
       type: String,
-      required: [true, 'Full name is required'],
       trim: true,
       minlength: [2, 'Full name must be at least 2 characters'],
       maxlength: [50, 'Full name must be 50 characters or less'],
     },
+    profession: {
+      type: String,
+      trim: true,
+      minlength: [2, 'Profession must be at least 2 characters'],
+      maxlength: [50, 'Profession must be 50 characters or less'],
+    },
     bio: {
       type: String,
       trim: true,
-      minlength: [82, 'Full name must be at least 2 characters'],
-      maxlength: [500, 'Full name must be 50 characters or less'],
+      minlength: [10, 'Bio must be at least 10 characters'], // adjusted from 82 for usability
+      maxlength: [500, 'Bio must be 500 characters or less'],
     },
     savedPost: [
       {
@@ -84,7 +89,7 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: function (doc, ret) {
+      transform: function (_doc, ret) {
         delete ret.password;
         delete ret.__v;
         return ret;
@@ -92,7 +97,7 @@ const userSchema = new Schema<IUser>(
     },
     toObject: {
       virtuals: true,
-      transform: function (doc, ret) {
+      transform: function (_doc, ret) {
         delete ret.password;
         delete ret.__v;
         return ret;
@@ -101,6 +106,7 @@ const userSchema = new Schema<IUser>(
   }
 );
 
+// Password hashing middleware
 userSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password')) return next();
 
@@ -113,7 +119,9 @@ userSchema.pre<IUser>('save', async function (next) {
   }
 });
 
+// Instance method for password validation
 userSchema.methods.validatePassword = async function (
+  this: IUser,
   candidatePassword: string
 ): Promise<boolean> {
   try {
@@ -124,6 +132,6 @@ userSchema.methods.validatePassword = async function (
   }
 };
 
+// Export the model
 const User = models.User || model<IUser>('User', userSchema);
-
 export default User;

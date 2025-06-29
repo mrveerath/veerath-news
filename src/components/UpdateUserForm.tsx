@@ -10,7 +10,8 @@ export interface UserDetailsUpdate {
   email: string;
   profileImage: string;
   fullName: string;
-  bio:string
+  bio: string
+  profession: string
 }
 
 interface FormErrors {
@@ -18,7 +19,8 @@ interface FormErrors {
   email?: string;
   fullName?: string;
   profileImage?: string;
-  bio?:string
+  bio?: string
+  profession?: string
 }
 
 export default function UpdateUserForm({
@@ -74,7 +76,8 @@ export default function UpdateUserForm({
         email: formData.get('email') as string,
         fullName: formData.get('fullName') as string,
         profileImage: formData.get('profileImage') as string,
-        bio:formData.get("bio") as string
+        bio: formData.get("bio") as string,
+        profession: formData.get("profession") as string
       };
 
       if (validateForm(updatedUserData)) {
@@ -93,7 +96,7 @@ export default function UpdateUserForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-zinc-800 rounded-none ">
+    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-transparent rounded-none ">
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
         <User className="h-5 w-5 text-red-600" />
         Update Profile Details
@@ -152,6 +155,23 @@ export default function UpdateUserForm({
             <p className="text-red-600 text-sm mt-1">{errors.fullName}</p>
           )}
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="profession" className="text-zinc-700 dark:text-zinc-300 block mb-1">
+            Profession
+          </Label>
+          <Input
+            type="text"
+            id="profession"
+            name="profession"
+            defaultValue={userDetails.profession}
+            placeholder="Developer"
+            className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
+            required
+          />
+          {errors?.profession && (
+            <p className="text-red-600 text-sm mt-1">{errors.profession}</p>
+          )}
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="profileImage" className="text-zinc-700 dark:text-zinc-300 block mb-1">
@@ -170,14 +190,14 @@ export default function UpdateUserForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="profileImage" className="text-zinc-700 dark:text-zinc-300 block mb-1">
-            Profile Image URL
+          <Label htmlFor="bio" className="text-zinc-700 dark:text-zinc-300 block mb-1">
+            Bio
           </Label>
           <Textarea
             id="bio"
             name="bio"
             defaultValue={userDetails.bio}
-            placeholder="https://example.com/profile.jpg"
+            placeholder="describe yourself"
             className="border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-red-600 focus:border-red-600 rounded-none"
           />
           {errors?.bio && (

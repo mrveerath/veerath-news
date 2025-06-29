@@ -1,110 +1,153 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import Imagepkr from "@/components/UploadAssetForm";
-import { Upload, User, Copy, Trash, Edit, FileImage, BookText, Settings } from "lucide-react";
-import { useSession } from "next-auth/react";
-import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../actions/imagesAction";
-import UpdateUserForm from "@/components/UpdateUserForm";
-import ChangePasswordForm from "@/components/ChangePassword";
-import { signOut } from "next-auth/react";
-import { getUserDetails, updateUserDetails, updateUserPassword, UserResponse } from "../actions/userAction";
-import { getBlogs, GetBlogsResponse } from "../actions/blogsAction";
+import Image from "next/image";
+
+
+// Import UI components and icons as needed
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+
+// Import icons
+import { Upload, User, Copy, Trash, Edit, Image as ImageIcon, BookText, Settings, Key, AlertCircle, Menu } from "lucide-react";
+
+// Custom Forms and Additional Components
+import UpdateUserForm, { UserDetailsUpdate } from "@/components/UpdateUserForm";
+
 import BlogCard from "../blogs/component/BlogCard";
+import { deleteUserAccount, getUserDetails, updateUserDetails, updateUserPassword, UserResponse } from "../actions/userAction";
+import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../actions/imagesAction";
+import ChangePasswordForm, { Passwords } from "@/components/ChangePassword";
+import Imagepkr from "@/components/UploadAssetForm";
+import { getBlogs, GetBlogsResponse } from "../actions/blogsAction";
 
+const ProfilePage = () => {
+  const { data: session, update } = useSession();
+  const userId = session?.user?.id || "";
 
-export default function ProfilePage(): React.ReactElement {
-  const { data } = useSession();
+  // State Management
+  const [activeTab, setActiveTab] = useState("blogs");
+  const [isLoading, setIsLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
+  const [myBlogs, setMyBlogs] = useState<GetBlogsResponse[]>([]);
+  const [uploadedAssets, setUploadedAssets] = useState<ImageType[]>([]);
   const [showImageUploadForm, setShowImageUploadForm] = useState(false);
   const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
-  const [uploadedAssets, setUploadedAssets] = useState<ImageType[]>([]);
-  const [activeTab, setActiveTab] = useState<'assets' | 'blogs' | 'userSetting'>('blogs');
-  const [userDetails, setUserDetails] = useState<UserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const userId = data?.user.id || "";
-  const [myBlogs,setMyBlogs] = useState<GetBlogsResponse[] | []>([])
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const getUserBlogs = useCallback(async () => {
-     if (!userId) return;
+  const tabs = [
+    { value: "blogs", icon: <BookText />, label: "My Blogs" },
+    { value: "assets", icon: <ImageIcon />, label: "My Assets" },
+    { value: "settings", icon: <Settings />, label: "Settings" },
+  ];
 
-    const { message, success, data, error } = await getBlogs(userId)
-    console.log(error)
-      if (!success) {
-        toast.error(message || "Failed to load user details");
-        return;
-      }
-      setMyBlogs(data as GetBlogsResponse[])
-  }, [userId])
+  // Data Fetching Functions
+const fetchUserDetails = useCallback(async () => {
+  if (!userId) return;
 
-  // Fetch user data
-  const getUser = useCallback(async () => {
+  try {
+    setIsLoading(true);
+
+    const { success, data, message } = await getUserDetails(userId);
+
+    if (success && data) {
+      setUserDetails(data as UserResponse);
+    } else {
+      toast.error("Failed to load user details");
+    }
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    toast.error("An error occurred while loading user data");
+  } finally {
+    setIsLoading(false);
+  }
+}, [userId]);
+
+
+
+  const fetchUserBlogs = useCallback(async () => {
     if (!userId) return;
-
     try {
-      setIsLoading(true);
-      const { success, data, message, error } = await getUserDetails(userId);
-      console.log(error)
-      if (!success) {
-        toast.error(message || "Failed to load user details");
-        return;
-      }
-      setUserDetails(data);
+      const { success, data, message } = await getBlogs(userId);
+      if (success) setMyBlogs(data as GetBlogsResponse[]);
+      else toast.error(message || "Failed to load user blogs");
     } catch (error) {
-      console.error(error);
-      toast.error("An error occurred while loading user data");
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching user blogs:", error);
     }
   }, [userId]);
 
-  // Handle profile update
-  const handleUserDetailsSubmit = useCallback(async (details: {
-    userName: string;
-    email: string;
-    fullName: string;
-    profileImage?: string;
-    bio: string
-  }) => {
+  const fetchImages = useCallback(async () => {
+    if (!userId) return;
     try {
-      const { success, data, message, error } = await updateUserDetails(userId, details);
-      console.log(error)
-      if (success) {
-        toast.success("Profile updated successfully");
-        setUserDetails(data);
-      } else {
-        toast.error(message || "Failed to update profile");
-      }
+      const { success, images } = await getAllImages({ userId });
+      if (success && images) setUploadedAssets(images as ImageType[]);
+      else toast.error("Failed to load images");
     } catch (error) {
-      console.error(error);
-      toast.error("An unexpected error occurred");
+      console.error("Error fetching images:", error);
     }
   }, [userId]);
 
-  // Handle password change
-  const handlePasswordChange = useCallback(async (passwords: {
-    oldPassword: string;
-    newPassword: string;
-  }) => {
-    try {
-      const { success, message, error, data } = await updateUserPassword(userId, passwords);
-      console.log(error)
-      console.log(data)
-      if (success) {
-        toast.success("Password updated successfully");
-        await signOut();
-      } else {
-        toast.error(message || "Failed to update password");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("An unexpected error occurred");
+  useEffect(() => {
+    if (userId) {
+      fetchUserDetails();
+      fetchUserBlogs();
+      fetchImages();
     }
-  }, [userId]);
+  }, [userId, fetchUserDetails, fetchUserBlogs, fetchImages]);
 
-  // Handle image upload
+  // Form Handlers
+  const handleUserDetailsSubmit = useCallback(
+    async (details: UserDetailsUpdate) => {
+      try {
+        const { success, data, message } = await updateUserDetails(
+          userId,
+          details
+        );
+        if (success) {
+          toast.success("Profile updated successfully");
+          setUserDetails(data);
+        } else {
+          toast.error(message || "Failed to update profile");
+        }
+      } catch (error) {
+        console.error("Error updating user details:", error);
+        toast.error("An unexpected error occurred");
+      }
+    },
+    [userId]
+  );
+
+  const handlePasswordChange = useCallback(
+    async (passwordDetails: Passwords) => {
+      try {
+        const { success, message } = await updateUserPassword(
+          userId,
+          passwordDetails
+        );
+        if (success) {
+          toast.success("Password updated successfully");
+        } else {
+          toast.error(message || "Failed to update password");
+        }
+      } catch (error) {
+        console.error("Error updating password:", error);
+        toast.error("An unexpected error occurred");
+      }
+    },
+    [userId]
+  );
+
   const handleUploadAssets = useCallback(async () => {
     if (imagesToUpload.length === 0) {
       return toast.warning("Please select at least one image");
@@ -116,310 +159,424 @@ export default function ProfilePage(): React.ReactElement {
         userId,
       });
 
-      if (success && Array.isArray(images)) {
+      if (success && images) {
         toast.success("Images uploaded successfully");
-        setUploadedAssets(prev => [...prev, ...images]);
+        setUploadedAssets((prev: ImageType[]) => [...prev, ...images]);
         setShowImageUploadForm(false);
         setImagesToUpload([]);
       } else {
         toast.error("Failed to upload images");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error uploading images:", error);
       toast.error("An unexpected error occurred during upload");
     }
   }, [imagesToUpload, userId]);
 
-  // Handle image deletion
-  const handleDeleteImage = useCallback(async (imageId: string) => {
+
+  const handleDeleteImage = useCallback(
+    async (imageId: string) => {
+      try {
+        const { success } = await deleteImage({ imageId, userId });
+        if (success) {
+          toast.success("Image deleted successfully");
+          setUploadedAssets((prev) => prev.filter((img) => img._id !== imageId));
+        } else {
+          toast.error("Failed to delete image");
+        }
+      } catch (error) {
+        console.error("Error deleting image:", error);
+        toast.error("An unexpected error occurred");
+      }
+    },
+    [userId]
+  );
+
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      toast.success("Image URL copied to clipboard");
+    });
+  };
+
+  const handleDeleteAccount = async () => {
     try {
-      const { success, error } = await deleteImage({ imageId, userId });
+      const { success, message } = await deleteUserAccount(userId);
       if (success) {
-        toast.success("Image deleted successfully");
-        setUploadedAssets(prev => prev.filter(img => img._id !== imageId));
+        toast.success(message || "Account deleted successfully");
+        signOut()
       } else {
-        toast.error(error || "Failed to delete image");
+        toast.error(message || "Failed to delete account");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error deleting account:", error);
       toast.error("An unexpected error occurred");
+    } finally {
+      setIsDeleteDialogOpen(false);
     }
-  }, [userId]);
-
-  // Copy image URL to clipboard
-  const handleCopyUrl = useCallback((url: string) => {
-    navigator.clipboard.writeText(url);
-    toast.success("Image URL copied to clipboard");
-  }, []);
-
-  // Fetch user images
-  const getImages = useCallback(async () => {
-    try {
-      const { success, images } = await getAllImages({ userId });
-      if (success && Array.isArray(images)) {
-        setUploadedAssets(images);
-      } else {
-        toast.error("Failed to load images");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("An unexpected error occurred");
-    }
-  }, [userId]);
-
-  // Initial data loading
-  useEffect(() => {
-    if (userId) {
-      getImages();
-      getUser();
-      getUserBlogs()
-    }
-  }, [userId, getImages, getUser, getUserBlogs]);
+  };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-900 items-center justify-center">
-        <div className="animate-spin rounded-none h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col space-y-4 w-full max-w-4xl p-4">
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+          <Skeleton className="h-[500px] w-full" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-      {/* Sidebar */}
-      <aside className="w-72 bg-zinc-100 dark:bg-zinc-800 p-6 flex flex-col gap-6 border-r border-zinc-200 dark:border-zinc-700 sticky top-0 h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-40 h-40 bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden border-2 border-red-600 rounded-none">
-            {userDetails?.profileImage ? (
-              <Image
-                src={userDetails?.profileImage}
-                alt={userDetails?.profileImage}
-                width={160}
-                height={160}
-                className="object-cover w-full h-full"
-                priority
-              />
-            ) : (
-              <User size={48} className="text-zinc-500 dark:text-zinc-400" />
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 z-10 bg-background border-b p-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold">Profile</h1>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        {/* Sidebar */}
+        <aside className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block w-full md:w-64 flex-shrink-0`}>
+          <Card className="md:sticky md:top-8 h-screen rounded-none">
+            <CardHeader className="flex flex-col items-center">
+              <Avatar className="h-24 w-24 border-2 border-primary">
+                <AvatarImage src={userDetails?.profileImage || ""} alt="User Profile" />
+                <AvatarFallback>
+                  <User className="h-12 w-12" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-center mt-4">
+                <h3 className="text-xl font-bold">{userDetails?.fullName}</h3>
+                <p className="text-sm text-muted-foreground">
+                  @{userDetails?.userName}
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="tabs">
+                <TabsList className="grid w-full focus:bg-red-200">
+                  {tabs.map((tab) => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      onClick={() => {
+                        setActiveTab(tab.value);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="justify-start gap-3 h-12 bg-transparent"
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1">
+          {/* Mobile Tab Title */}
+          <div className="md:hidden mb-6">
+            <h1 className="text-2xl font-bold">
+              {activeTab === "blogs" && "My Blog Posts"}
+              {activeTab === "assets" && "Media Assets"}
+              {activeTab === "settings" && "Account Settings"}
+            </h1>
+          </div>
+
+          {/* Desktop Tab Title and Actions */}
+          <div className="hidden md:flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">
+              {activeTab === "blogs" && "My Blog Posts"}
+              {activeTab === "assets" && "Media Assets"}
+              {activeTab === "settings" && "Account Settings"}
+            </h1>
+            {activeTab === "blogs" && (
+              <Button className="gap-2">
+                <Edit className="h-4 w-4" />
+                Create Blog
+              </Button>
+            )}
+            {activeTab === "assets" && (
+              <Button
+                onClick={() => setShowImageUploadForm(true)}
+                className="gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Upload Assets
+              </Button>
             )}
           </div>
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">{userDetails?.fullName}</h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">@{userDetails?.userName}</p>
-          </div>
-        </div>
 
-        <div className="flex-1 flex flex-col gap-2">
-          <Button
-            variant="ghost"
-            className={`justify-start gap-3 rounded-none ${activeTab === 'blogs'
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
-                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-              }`}
-            onClick={() => setActiveTab('blogs')}
-          >
-            <BookText className="h-5 w-5" />
-            My Blogs
-          </Button>
-          <Button
-            variant="ghost"
-            className={`justify-start gap-3 rounded-none ${activeTab === 'assets'
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
-                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-              }`}
-            onClick={() => setActiveTab('assets')}
-          >
-            <FileImage className="h-5 w-5" />
-            My Assets
-          </Button>
-          <Button
-            variant="ghost"
-            className={`justify-start gap-3 rounded-none ${activeTab === 'userSetting'
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-red-600'
-                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-              }`}
-            onClick={() => setActiveTab("userSetting")}
-          >
-            <Settings className="h-5 w-5" />
-            Settings
-          </Button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">
-            {activeTab === 'assets' ? 'Media Assets' :
-              activeTab === 'blogs' ? 'Blog Posts' : 'Account Settings'}
-          </h1>
-          {activeTab === 'assets' && (
-            <Button
-              onClick={() => setShowImageUploadForm(true)}
-              className="bg-red-600 text-white hover:bg-red-700 rounded-none flex gap-2"
-            >
-              <Upload className="h-5 w-5" />
-              Upload Assets
-            </Button>
-          )}
-          {activeTab === 'blogs' && (
-            <Button className="bg-red-600 text-white hover:bg-red-700 rounded-none flex gap-2">
-              <Edit className="h-5 w-5" />
-              Create Blog
-            </Button>
-          )}
-        </div>
-
-        {/* Content Area */}
-        {activeTab === 'assets' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {uploadedAssets.length > 0 ? (
-              uploadedAssets.map((img) => (
-                <div
-                  key={img._id}
-                  className="relative group bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-none hover:border-zinc-300 dark:hover:border-zinc-600 transition-all"
-                >
-                  <div className="aspect-square overflow-hidden rounded-t-lg">
-                    <Image
-                      src={img.url}
-                      alt={img.originalName}
-                      height={100}
-                      width={100}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      loading="lazy"
-                    />
+          {/* Tab Content */}
+          <div className={activeTab !== "blogs" ? "hidden" : ""}>
+            <Card>
+              <CardHeader className="md:hidden">
+                <CardTitle className="flex items-center gap-2">
+                  <BookText className="h-5 w-5" />
+                  My Blog Posts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {myBlogs.length > 0 ? (
+                  <div className="grid gap-6">
+                    {myBlogs.map((blog) => (
+                      <BlogCard details={blog} key={blog.id} />
+                    ))}
                   </div>
-                  <div className="p-3">
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 truncate">{img.originalName}</p>
-                    <div className="flex justify-between mt-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyUrl(img.url)}
-                        className="text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-none p-1"
-                        aria-label="Copy image URL"
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <BookText className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">
+                      No blog posts yet
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create your first blog post to get started
+                    </p>
+                    <Button className="gap-2">
+                      <Edit className="h-4 w-4" />
+                      Create Blog Post
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className={activeTab !== "assets" ? "hidden" : ""}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  <span className="hidden md:inline">Media Assets</span>
+                </CardTitle>
+                <Button
+                  onClick={() => setShowImageUploadForm(true)}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="hidden md:inline">Upload</span>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {uploadedAssets.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {uploadedAssets.map((img: ImageType) => (
+                      <div
+                        key={img._id}
+                        className="relative group rounded-none overflow-hidden border"
                       >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteImage(img._id)}
-                        className="text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 rounded-none p-1"
-                        aria-label="Delete image"
+                        <div className="aspect-square overflow-hidden">
+                          <Image
+                            src={img?.url}
+                            alt={img.originalName}
+                            width={200}
+                            height={200}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                          <div className="flex justify-between w-full">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCopyUrl(img.url)}
+                              className="text-white hover:bg-white/20 h-8 w-8"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteImage(img._id)}
+                              className="text-white hover:bg-white/20 h-8 w-8"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">
+                      No assets uploaded yet
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Upload your first asset to get started
+                    </p>
+                    <Button
+                      onClick={() => setShowImageUploadForm(true)}
+                      className="gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload Assets
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className={activeTab !== "settings" ? "hidden" : ""}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Account Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-8">
+                <UpdateUserForm
+                  userDetails={{
+                    userName: userDetails?.userName || "",
+                    email: userDetails?.email || "",
+                    fullName: userDetails?.fullName || "",
+                    profileImage: userDetails?.profileImage || "",
+                    bio: userDetails?.bio || "",
+                    profession: userDetails?.profession || "",
+                  }}
+                  onUserDetailsSubmit={handleUserDetailsSubmit}
+                />
+
+                <Separator />
+
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
+                    <Key className="h-5 w-5" />
+                    Change Password
+                  </h3>
+                  <ChangePasswordForm
+                    handleChangePassword={handlePasswordChange}
+                  />
+                </div>
+
+                <Separator />
+
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold mb-4 text-destructive">
+                    <AlertCircle className="h-5 w-5" />
+                    Danger Zone
+                  </h3>
+                  <div className="rounded-none border border-destructive p-4">
+                    <div className="flex flex-col space-y-2">
+                      <h4 className="font-medium">
+                        Delete your account permanently
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        This action cannot be undone. All your data will be
+                        permanently removed.
+                      </p>
+                      <Dialog
+                        open={isDeleteDialogOpen}
+                        onOpenChange={setIsDeleteDialogOpen}
                       >
-                        <Trash className="h-4 w-4" />
-                      </Button>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            className="mt-2 gap-2 w-full sm:w-auto"
+                          >
+                            <Trash className="h-4 w-4" />
+                            Delete Account
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <AlertCircle className="h-5 w-5 text-destructive" />
+                              Confirm Account Deletion
+                            </DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete your account?
+                              This action cannot be undone. All your data,
+                              including blogs and images, will be permanently
+                              removed.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() => setIsDeleteDialogOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={handleDeleteAccount}
+                            >
+                              Delete Account
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-none">
-                <FileImage className="h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4" />
-                <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">No assets uploaded yet</h3>
-                <p className="text-zinc-500 dark:text-zinc-400 mb-4">Upload your first asset to get started</p>
-                <Button
-                  onClick={() => setShowImageUploadForm(true)}
-                  className="bg-red-600 text-white hover:bg-red-700 rounded-none"
-                >
-                  Upload Assets
-                </Button>
-              </div>
-            )}
+              </CardContent>
+            </Card>
           </div>
-        )}
-
-        {activeTab === 'blogs' && (
-          <div className="border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-none p-8 flex flex-col items-center justify-center min-h-[400px]">
-            {
-              (!myBlogs || myBlogs.length === 0) && (
-                <>
-                  <BookText className="h-12 w-12 text-zinc-400 dark:text-zinc-500 mb-4" />
-                  <h3 className="text-lg font-medium text-zinc-700 dark:text-zinc-300 mb-2">No blog posts yet</h3>
-                  <p className="text-zinc-500 dark:text-zinc-400 mb-4">Create your first blog post to get started</p>
-                  <Button className="bg-red-600 text-white hover:bg-red-700 rounded-none">
-                    Create Blog Post
-                  </Button>
-                </>
-              )
-            }
-            {
-              myBlogs && (
-                <div>
-                  {
-                    myBlogs.map((blog) => (
-                      <BlogCard details={blog} key={blog.id}/>
-                    ))
-                  }
-                </div>
-              )
-            }
-          </div>
-        )}
-
-        {activeTab === 'userSetting' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-zinc-800 p-6 border border-zinc-200 dark:border-zinc-700 rounded-none">
-            <UpdateUserForm
-              userDetails={{
-                userName: userDetails?.userName || "",
-                email: userDetails?.email || "",
-                fullName: userDetails?.fullName || "",
-                profileImage: userDetails?.profileImage || "",
-                bio: userDetails?.bio || ""
-              }}
-              onUserDetailsSubmit={handleUserDetailsSubmit}
-            />
-
-            <ChangePasswordForm
-              handleChangePassword={handlePasswordChange}
-            />
-          </div>
-        )}
-      </main>
+        </main>
+      </div>
 
       {/* Image Upload Modal */}
       {showImageUploadForm && (
-        <div className="fixed inset-0 bg-black/70 dark:bg-black/90 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-zinc-800 p-6 w-full max-w-lg border border-zinc-200 dark:border-zinc-700 rounded-none shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-zinc-800 dark:text-zinc-100">Upload Assets</h2>
-              <Button
-                onClick={() => setShowImageUploadForm(false)}
-                variant="ghost"
-                className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 rounded-none p-1"
-                aria-label="Close upload modal"
-              >
-                <span className="sr-only">Close</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </Button>
+        <Dialog
+          open={showImageUploadForm}
+          onOpenChange={setShowImageUploadForm}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Upload Assets
+              </DialogTitle>
+              <DialogDescription>
+                Select images to upload. Max file size: 5MB each.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <Imagepkr
+                images={imagesToUpload}
+                setImages={setImagesToUpload}
+              />
             </div>
-
-            <Imagepkr images={imagesToUpload} setImages={setImagesToUpload} />
-
-            <div className="flex justify-end gap-3 mt-6">
+            <DialogFooter>
               <Button
-                onClick={() => setShowImageUploadForm(false)}
                 variant="outline"
-                className="border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-none"
+                onClick={() => setShowImageUploadForm(false)}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUploadAssets}
-                className="bg-red-600 text-white hover:bg-red-700 rounded-none"
                 disabled={imagesToUpload.length === 0}
               >
                 Upload {imagesToUpload.length > 0 && `(${imagesToUpload.length})`}
               </Button>
-            </div>
-          </div>
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
-}
+};
+
+export default ProfilePage;

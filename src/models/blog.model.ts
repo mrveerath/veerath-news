@@ -19,6 +19,7 @@ export interface I_Blog {
     createdAt?: Date;
     updatedAt?: Date;
     createdBy: Types.ObjectId
+    readedBy: Types.ObjectId[]
 }
 
 const blogSchema = new Schema<I_Blog>(
@@ -100,7 +101,14 @@ const blogSchema = new Schema<I_Blog>(
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: true
-        }
+        },
+        readedBy: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'User',
+                required: true
+            }
+        ]
     },
     {
         timestamps: true,

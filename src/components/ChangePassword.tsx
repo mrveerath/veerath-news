@@ -77,7 +77,7 @@ export default function ChangePasswordForm({
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-zinc-800 rounded-none ">
+    <div className="w-full max-w-md mx-auto h-full bg-white dark:bg-transparent rounded-none ">
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
         <Settings className="h-5 w-5 text-red-600" />
         Change Your Password

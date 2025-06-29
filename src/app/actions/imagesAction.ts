@@ -15,7 +15,6 @@ const imagekit = new ImageKit({
 
 
 // Type definitions
-// Type definitions
 export interface ImageType {
   _id: string;
   url: string;
