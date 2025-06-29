@@ -1,7 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FiHeart, FiMessageSquare, FiCalendar, FiUser } from "react-icons/fi";
 import { getCompleteUserDetails } from "@/app/actions/userAction";
 import { toast } from "sonner";
@@ -41,9 +41,12 @@ interface CommentedPosts {
     id: string;
   };
 }
+interface PageParams {
+  userId: string;
+}
 
-export default function Page({ params }: { params: { userId: string } }) {
-  const { userId } = params;
+export default function Page({ params }: { params: Promise<PageParams> }) {
+  const resolvedParams = React.use(params);
   const { data } = useSession();
   console.log(data)
   const [userDetails, setUserDetails] = useState<CompleteUserDetails | null>(null);
@@ -52,11 +55,11 @@ export default function Page({ params }: { params: { userId: string } }) {
   const [commentedPosts, setCommentedPosts] = useState<CommentedPosts[]>([]);
 
   const fetchUserDetails = useCallback(async () => {
-    if (!userId) return;
+    if (!resolvedParams.userId) return;
 
     try {
       setIsLoading(true);
-      const { success, data, message } = await getCompleteUserDetails(userId);
+      const { success, data, message } = await getCompleteUserDetails(resolvedParams.userId);
       if (!success) {
         toast.error(message || "Failed to load user details");
         return;
@@ -68,14 +71,14 @@ export default function Page({ params }: { params: { userId: string } }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [resolvedParams.userId]);
 
   const fetchLikedPosts = useCallback(async () => {
-    if (!userId) return;
+    if (!resolvedParams.userId) return;
 
     try {
       setIsLoading(true);
-      const { success, data, message } = await getLikedPosts(userId);
+      const { success, data, message } = await getLikedPosts(resolvedParams.userId);
       if (!success) {
         toast.error(message || "Failed to load liked posts");
         return;
@@ -87,14 +90,14 @@ export default function Page({ params }: { params: { userId: string } }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [resolvedParams.userId]);
 
   const fetchCommentedPosts = useCallback(async () => {
-    if (!userId) return;
+    if (!resolvedParams.userId) return;
 
     try {
       setIsLoading(true);
-      const { success, data, message } = await getCommentedPosts(userId);
+      const { success, data, message } = await getCommentedPosts(resolvedParams.userId);
       if (!success) {
         toast.error(message || "Failed to load commented posts");
         return;
@@ -106,15 +109,15 @@ export default function Page({ params }: { params: { userId: string } }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [resolvedParams.userId]);
 
   useEffect(() => {
-    if (userId) {
+    if (resolvedParams.userId) {
       fetchUserDetails();
       fetchLikedPosts();
       fetchCommentedPosts();
     }
-  }, [userId, fetchUserDetails, fetchLikedPosts, fetchCommentedPosts]);
+  }, [resolvedParams.userId, fetchUserDetails, fetchLikedPosts, fetchCommentedPosts]);
 
   if (isLoading) {
     return (
