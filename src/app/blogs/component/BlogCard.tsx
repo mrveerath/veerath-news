@@ -1,6 +1,7 @@
 import { deleteBlog } from "@/app/actions/blogsAction";
 import { Edit, MoreVertical, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -130,9 +131,11 @@ export default function BlogCard({ details }: { details: GetBlogsResponse }): Re
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Author */}
             <Link href={`/profile/${details.createdBy._id}`} className="flex items-center gap-3 hover:underline">
-              <img
+              <Image
                 src={details.createdBy.profileImage}
                 alt={details.createdBy.fullName}
+                height={100}
+                width={100}
                 className="w-10 h-10 rounded-full border-2 border-red-600"
               />
               <div className="text-sm">

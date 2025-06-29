@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
@@ -24,7 +24,7 @@ export interface BlogData {
 }
 
 export default function Page(): React.ReactElement {
-  const { data, status } = useSession();
+  const { data } = useSession();
   const router = useRouter();
   const userId = data?.user.id;
   const [blogData, setBlogData] = useState<BlogData>({

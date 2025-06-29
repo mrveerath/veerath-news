@@ -47,7 +47,6 @@ import json from 'highlight.js/lib/languages/json';
 import markdown from 'highlight.js/lib/languages/markdown';
 import yaml from 'highlight.js/lib/languages/yaml';
 import xml from 'highlight.js/lib/languages/xml';
-import CodeForm from './CodeSnippet';
 
 // Create a lowlight instance and register languages
 const lowlight = createLowlight();

@@ -44,7 +44,8 @@ interface CommentedPosts {
 
 export default function Page({ params }: { params: { userId: string } }) {
   const { userId } = params;
-  const { data: session } = useSession();
+  const { data } = useSession();
+  console.log(data)
   const [userDetails, setUserDetails] = useState<CompleteUserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [likedPosts, setLikedPosts] = useState<LikedPosts[]>([]);

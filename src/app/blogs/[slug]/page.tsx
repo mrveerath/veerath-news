@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useTransition,
 } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -56,13 +55,10 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [commentInput, setCommentInput] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isLikingPost, setIsLikingPost] = useState(false);
   const [isSavingPost, setIsSavingPost] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [commentScrollPosition, setCommentScrollPosition] = useState(0);
-  const [isPending, startTransition] = useTransition();
   const [commentData, setCommentData] = useState<string>("");
 
   // Refs for DOM elements
@@ -168,18 +164,6 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
     }
   }, [blog, checkSavedStatus]);
 
-  // Effect for tracking scroll position in comments
-  useEffect(() => {
-    const commentsSection = commentsSectionRef.current;
-    if (!commentsSection) return;
-
-    const handleScroll = () => {
-      setCommentScrollPosition(commentsSection.scrollTop);
-    };
-
-    commentsSection.addEventListener("scroll", handleScroll);
-    return () => commentsSection.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Effect for auto-focusing comment input when hash changes
   useEffect(() => {
@@ -217,6 +201,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
         toast.error(response.message || "Failed to update like");
       }
     } catch (err) {
+      console.log(err)
       toast.error("Failed to update like");
     } finally {
       setIsLikingPost(false);
@@ -246,6 +231,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
         toast.error(response.message || "Failed to update save status");
       }
     } catch (err) {
+      console.log(err)
       toast.error("Failed to update save status");
     } finally {
       setIsSavingPost(false);
@@ -306,7 +292,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
       setCommentData("");
       if (response.success && response.data) {
         setComments((prev) => [...prev, response.data as BlogComments]);
-        setCommentInput("");
+        setCommentData("");
         toast.success("Comment posted successfully!");
 
         // Scroll to new comment after a brief delay
@@ -317,6 +303,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
         toast.error(response.message || "Failed to post comment");
       }
     } catch (err) {
+      console.log(err)
       toast.error("Failed to post comment");
     } finally {
       setIsSubmittingComment(false);
@@ -351,6 +338,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
         );
       }
     } catch (err) {
+      console.log(err)
       toast.error("Failed to update comment like");
     }
   };
@@ -372,6 +360,7 @@ export default function BlogPage({ params }: { params: Promise<BlogPageParams> }
         toast.error(response.message || "Failed to delete comment");
       }
     } catch (err) {
+      console.log(err)
       toast.error("Failed to delete comment");
     }
   };

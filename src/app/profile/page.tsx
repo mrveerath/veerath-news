@@ -9,14 +9,11 @@ import Image from "next/image";
 // Import UI components and icons as needed
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 // Import icons
 import { Upload, User, Copy, Trash, Edit, Image as ImageIcon, BookText, Settings, Key, AlertCircle, Menu } from "lucide-react";
@@ -30,13 +27,11 @@ import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../ac
 import ChangePasswordForm, { Passwords } from "@/components/ChangePassword";
 import Imagepkr from "@/components/UploadAssetForm";
 import { getBlogs, GetBlogsResponse } from "../actions/blogsAction";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const ProfilePage = () => {
-  const { data: session, update, status } = useSession();
+  const { data: session } = useSession();
   const userId = session?.user?.id || "";
-  const router = useRouter()
 
   // State Management
   const [activeTab, setActiveTab] = useState("blogs");

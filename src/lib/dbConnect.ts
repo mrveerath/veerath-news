@@ -1,6 +1,5 @@
 // src/lib/dbConnect.ts
 import mongoose, { Mongoose } from 'mongoose';
-import { Comment } from '@/models/comment.model';
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 

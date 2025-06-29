@@ -1,5 +1,4 @@
 import { Schema, model, Types, models } from "mongoose";
-import { Comment } from "./comment.model";
 
 // TypeScript interface for the Blog
 export interface I_Blog {
