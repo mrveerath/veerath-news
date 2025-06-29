@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
@@ -24,15 +24,14 @@ export interface BlogData {
 }
 
 export default function Page(): React.ReactElement {
-  const { data } = useSession();
+  const { data, status } = useSession();
   const router = useRouter();
   const userId = data?.user.id;
-  console.log(userId)
   const [blogData, setBlogData] = useState<BlogData>({
     title: '',
     slug: '',
     excerpt: '',
-    content: '',
+    content: 'Start From Here',
     thumbnailUrl: '',
     metaTitle: '',
     metaDescription: '',
@@ -143,9 +142,8 @@ export default function Page(): React.ReactElement {
                   name="title"
                   value={blogData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.title ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.title ? 'border-red-500' : ''
+                    }`}
                   placeholder="Enter blog title"
                   required
                   aria-describedby={errors.title ? 'title-error' : undefined}
@@ -162,9 +160,8 @@ export default function Page(): React.ReactElement {
                   name="excerpt"
                   value={blogData.excerpt}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.excerpt ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.excerpt ? 'border-red-500' : ''
+                    }`}
                   placeholder="Short description of your blog (max 160 characters)"
                   rows={3}
                   maxLength={160}
@@ -282,9 +279,8 @@ export default function Page(): React.ReactElement {
                   name="thumbnailUrl"
                   value={blogData.thumbnailUrl}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.thumbnailUrl ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.thumbnailUrl ? 'border-red-500' : ''
+                    }`}
                   placeholder="https://example.com/image.jpg"
                   required
                   aria-describedby={errors.thumbnailUrl ? 'thumbnail-error' : undefined}
@@ -327,9 +323,8 @@ export default function Page(): React.ReactElement {
                   name="slug"
                   value={blogData.slug}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.slug ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.slug ? 'border-red-500' : ''
+                    }`}
                   placeholder="blog-post-title"
                   required
                   aria-describedby={errors.slug ? 'slug-error' : undefined}
@@ -351,9 +346,8 @@ export default function Page(): React.ReactElement {
                   name="metaTitle"
                   value={blogData.metaTitle}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.metaTitle ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.metaTitle ? 'border-red-500' : ''
+                    }`}
                   placeholder="SEO title for search engines (max 60 characters)"
                   maxLength={60}
                   required
@@ -378,9 +372,8 @@ export default function Page(): React.ReactElement {
                   name="metaDescription"
                   value={blogData.metaDescription}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${
-                    errors.metaDescription ? 'border-red-500' : ''
-                  }`}
+                  className={`w-full px-4 py-2 rounded-none border focus:ring-2 focus:ring-red-500 focus:border-transparent bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 ${errors.metaDescription ? 'border-red-500' : ''
+                    }`}
                   placeholder="SEO description for search engines (max 160 characters)"
                   rows={3}
                   maxLength={160}

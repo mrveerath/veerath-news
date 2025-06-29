@@ -16,6 +16,7 @@ export interface GetBlogsResponse {
     id: string;
     title: string;
     excerpt: string;
+    slug:string;
     thumbnailUrl: string;
     tags: string[];
     createdBy: {
@@ -30,7 +31,7 @@ export interface GetBlogsResponse {
     totalReads: number;
 }
 
-interface BlogDocument {
+export interface BlogDocument {
     _id: string;
     title: string;
     excerpt: string;
@@ -49,11 +50,7 @@ interface BlogDocument {
         profileImage: string;
         _id: string;
     };
-    likedBy: Array<{
-        fullName: string;
-        profileImage: string;
-        _id: string;
-    }>;
+    likedBy: string[];
     readedBy: string[];
     totalComments: number;
 }
@@ -74,10 +71,12 @@ export async function getBlogs(userId: string): Promise<ApiResponse<GetBlogsResp
         await dbConnect();
 
         const allblogs = await Blog.find({ createdBy: userId, isDeleted: false })
-            .select("title excerpt thumbnailUrl tags createdBy likedBy comments readedBy createdAt")
+            .select("title excerpt thumbnailUrl tags createdBy likedBy comments readedBy createdAt slug")
             .populate({ path: 'createdBy', select: 'fullName profileImage _id profession' })
             .sort({ createdAt: -1 })
             .lean();
+
+            console.log(allblogs)
 
         const blogs: GetBlogsResponse[] = allblogs.map((B) => ({
             id: String(B._id),
@@ -95,6 +94,7 @@ export async function getBlogs(userId: string): Promise<ApiResponse<GetBlogsResp
             totalComments: B.comments?.length || 0,
             totalLikes: B.likedBy?.length || 0,
             totalReads: B.readedBy?.length || 0,
+            slug:B.slug
         }));
 
         return { success: true, message: "Blogs fetched successfully", data: blogs };
@@ -173,15 +173,17 @@ export async function getBlogById(blogId: string): Promise<ApiResponse<BlogDocum
     try {
         await dbConnect();
 
-        if (!Types.ObjectId.isValid(blogId)) {
-            return { success: false, error: true, message: "Invalid blog ID" };
+        if(!blogId){
+            return { success: false, error: true, message: "Please Provide The Slug" };
         }
+        console.log(blogId)
 
-        const blog = await Blog.findOne({ _id: blogId, isDeleted: false })
+        const blog = await Blog.findOne({ slug: blogId, isDeleted: false })
             .populate('createdBy', 'fullName profileImage _id')
             .populate('likedBy', 'fullName profileImage _id')
             .lean<BlogDocument>();
 
+            console.log(blog)
         if (!blog) {
             return { success: false, error: true, message: "Blog not found" };
         }
@@ -204,12 +206,8 @@ export async function getBlogById(blogId: string): Promise<ApiResponse<BlogDocum
                 profileImage: blog.createdBy.profileImage,
                 _id: String(blog.createdBy._id),
             },
-            likedBy: blog.likedBy.map((l: any) => ({
-                fullName: l.fullName,
-                profileImage: l.profileImage,
-                _id: String(l._id),
-            })),
-            readedBy: blog.readedBy,
+            likedBy: blog.likedBy.map((like) => like.toString()),
+            readedBy: blog.readedBy.map((comment) => comment.toString()),
             totalComments: blog.comments.length || 0,
             comments:blog.comments
         };
@@ -257,6 +255,7 @@ export async function getPaginatedBlogs(
             excerpt: B.excerpt,
             thumbnailUrl: B.thumbnailUrl,
             tags: B.tags,
+            slug:B.slug,
             createdBy: {
                 fullName: B.createdBy.fullName,
                 profileImage: B.createdBy.profileImage,

@@ -30,10 +30,13 @@ import { deleteImage, getAllImages, ImageType, uploadAndSaveImages } from "../ac
 import ChangePasswordForm, { Passwords } from "@/components/ChangePassword";
 import Imagepkr from "@/components/UploadAssetForm";
 import { getBlogs, GetBlogsResponse } from "../actions/blogsAction";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const ProfilePage = () => {
-  const { data: session, update } = useSession();
+  const { data: session, update, status } = useSession();
   const userId = session?.user?.id || "";
+  const router = useRouter()
 
   // State Management
   const [activeTab, setActiveTab] = useState("blogs");
@@ -53,33 +56,32 @@ const ProfilePage = () => {
   ];
 
   // Data Fetching Functions
-const fetchUserDetails = useCallback(async () => {
-  if (!userId) return;
+  const fetchUserDetails = useCallback(async () => {
+    if (!userId) return;
 
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    const { success, data, message } = await getUserDetails(userId);
+      const { success, data, message } = await getUserDetails(userId);
 
-    if (success && data) {
-      setUserDetails(data as UserResponse);
-    } else {
-      toast.error("Failed to load user details");
+      if (success && data) {
+        setUserDetails(data as UserResponse);
+      } else {
+        toast.error("Failed to load user details");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      toast.error("An error occurred while loading user data");
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching user details:", error);
-    toast.error("An error occurred while loading user data");
-  } finally {
-    setIsLoading(false);
-  }
-}, [userId]);
-
-
+  }, [userId]);
 
   const fetchUserBlogs = useCallback(async () => {
     if (!userId) return;
     try {
       const { success, data, message } = await getBlogs(userId);
+      console.log(data)
       if (success) setMyBlogs(data as GetBlogsResponse[]);
       else toast.error(message || "Failed to load user blogs");
     } catch (error) {
@@ -161,7 +163,8 @@ const fetchUserDetails = useCallback(async () => {
 
       if (success && images) {
         toast.success("Images uploaded successfully");
-        setUploadedAssets((prev: ImageType[]) => [...prev, ...images]);
+        console.log(images)
+        setUploadedAssets((prev: ImageType[]) => [...prev, ...images as ImageType[]]);
         setShowImageUploadForm(false);
         setImagesToUpload([]);
       } else {
@@ -262,6 +265,7 @@ const fetchUserDetails = useCallback(async () => {
                 <p className="text-sm text-muted-foreground">
                   @{userDetails?.userName}
                 </p>
+                <p>{userDetails?.bio}</p>
               </div>
             </CardHeader>
             <CardContent>
@@ -306,10 +310,10 @@ const fetchUserDetails = useCallback(async () => {
               {activeTab === "settings" && "Account Settings"}
             </h1>
             {activeTab === "blogs" && (
-              <Button className="gap-2">
+              <Link href={"/create-blog"} className="flex p-2 bg-zinc-950 text-zinc-50 dark:text-zinc-950 font-semibold dark:bg-zinc-50 items-center justify-between gap-2">
                 <Edit className="h-4 w-4" />
                 Create Blog
-              </Button>
+              </Link>
             )}
             {activeTab === "assets" && (
               <Button
@@ -347,10 +351,10 @@ const fetchUserDetails = useCallback(async () => {
                     <p className="text-muted-foreground mb-4">
                       Create your first blog post to get started
                     </p>
-                    <Button className="gap-2">
+                    <Link href={"/create-blog"} className="flex p-2 bg-zinc-950 text-zinc-50 dark:text-zinc-950 font-semibold dark:bg-zinc-50 items-center justify-between gap-2">
                       <Edit className="h-4 w-4" />
-                      Create Blog Post
-                    </Button>
+                      Create Blog
+                    </Link>
                   </div>
                 )}
               </CardContent>

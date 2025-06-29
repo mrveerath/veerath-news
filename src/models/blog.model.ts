@@ -40,6 +40,7 @@ const blogSchema = new Schema<I_Blog>(
             match: [/^[a-z0-9-]+$/, "Slug must be URL-friendly (alphanumeric and hyphens)"],
             minlength: [3, "Slug must be at least 3 characters"],
             maxlength: [100, "Slug must be 100 characters or less"],
+            index:true
         },
         excerpt: {
             type: String,
@@ -117,11 +118,6 @@ const blogSchema = new Schema<I_Blog>(
     }
 );
 
-// Indexes for performance
-blogSchema.index({ slug: 1 });
-blogSchema.index({ tags: 1 });
-blogSchema.index({ isPublished: 1 });
-blogSchema.index({ title: "text", content: "text" });
 
 // Prevent indexing deleted documents
 blogSchema.index({ isDeleted: 1 });
